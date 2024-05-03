@@ -1,1 +1,8 @@
 models:
+  Customer:
+    full_name: string
+    email: string:100 unique
+    phone: string nullable
+    address: string nullable
+    created_at: nullable timestamp
+    updated_at: nullable timestamp
