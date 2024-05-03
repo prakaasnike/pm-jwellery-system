@@ -9,11 +9,6 @@ class Customer extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'full_name',
         'email',
@@ -21,14 +16,7 @@ class Customer extends Model
         'address',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'id' => 'integer',
-        'created_at' => 'timestamp',
-        'updated_at' => 'timestamp',
     ];
 }

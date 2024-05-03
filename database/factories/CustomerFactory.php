@@ -25,8 +25,6 @@ class CustomerFactory extends Factory
             'email' => $this->faker->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'address' => $this->faker->word(),
-            'created_at' => $this->faker->dateTime(),
-            'updated_at' => $this->faker->dateTime(),
         ];
     }
 }
