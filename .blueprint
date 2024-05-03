@@ -1,7 +1,11 @@
 created:
     - database/factories/CustomerFactory.php
-    - database/migrations/2024_05_03_150936_create_customers_table.php
+    - database/factories/CategoryFactory.php
+    - database/migrations/2024_05_03_170247_create_customers_table.php
+    - database/migrations/2024_05_03_170248_create_categories_table.php
     - app/Models/Customer.php
+    - app/Models/Category.php
 models:
     User: { name: string, email: string, email_verified_at: 'timestamp nullable', password: string, remember_token: 'string:100 nullable' }
     Customer: { full_name: string, email: 'string:100 unique', phone: 'string nullable', address: 'string nullable' }
+    Category: { name: string }
