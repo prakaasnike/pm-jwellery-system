@@ -34,7 +34,7 @@ class CustomerResource extends Resource
                     ->maxLength(100),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
-                    ->maxLength(255),
+                    ->maxLength(10),
                 Forms\Components\TextInput::make('address')
                     ->maxLength(255),
             ]);
