@@ -4,25 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Customer extends Model
+class Type extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'full_name',
-        'email',
-        'phone',
-        'address',
+        'name',
     ];
 
     protected $casts = [
         'id' => 'integer',
     ];
 
-    public function orders(): HasMany
+    public function products(): BelongsToMany
     {
-        return $this->hasMany(Order::class);
+        return $this->belongsToMany(Product::class);
     }
 }

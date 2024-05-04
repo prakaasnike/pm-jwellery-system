@@ -4,6 +4,54 @@ models:
     email: string:100 unique
     phone: string nullable
     address: string nullable
+    relationships:
+      hasMany: Order
+
+  Product:
+    product_image: string
+    name: string
+    stone_weight: integer
+    product_net_weight: integer
+    product_total_weight: integer
+    unit_id: unsignedInteger nullable
+    category_id: unsignedInteger nullable
+    type_id: unsignedInteger nullable
+    relationships:
+      belongsTo: Unit, Category
+      belongsToMany: Type
+
+  Order:
+    customer_id: unsignedInteger nullable
+    product_id: unsignedInteger nullable
+    status_id: unsignedInteger nullable
+    payment_id: unsignedInteger nullable
+    Received_date: date
+    Delivery_date: date
+    relationships:
+      belongsToMany: Payment
+      belongsTo: Status
 
   Category:
     name: string
+    relationships:
+      hasMany: Product
+
+  Type:
+    name: string
+    relationships:
+      belongsToMany: Product
+
+  Payment:
+    name: string
+    relationships:
+      belongsToMany: Order
+
+  Unit:
+    name: string
+    relationships:
+      hasMany: Product
+
+  Status:
+    name: string
+    relationships:
+      hasMany: Order
