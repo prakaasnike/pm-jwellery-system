@@ -7,16 +7,15 @@ created:
     - database/factories/PaymentFactory.php
     - database/factories/UnitFactory.php
     - database/factories/StatusFactory.php
-    - database/migrations/2024_05_04_105708_create_customers_table.php
-    - database/migrations/2024_05_04_105709_create_products_table.php
-    - database/migrations/2024_05_04_105710_create_orders_table.php
-    - database/migrations/2024_05_04_105711_create_categories_table.php
-    - database/migrations/2024_05_04_105712_create_types_table.php
-    - database/migrations/2024_05_04_105713_create_payments_table.php
-    - database/migrations/2024_05_04_105714_create_units_table.php
-    - database/migrations/2024_05_04_105715_create_statuses_table.php
-    - database/migrations/2024_05_04_105716_create_product_type_table.php
-    - database/migrations/2024_05_04_105717_create_order_payment_table.php
+    - database/migrations/2024_05_04_152424_create_customers_table.php
+    - database/migrations/2024_05_04_152425_create_products_table.php
+    - database/migrations/2024_05_04_152426_create_orders_table.php
+    - database/migrations/2024_05_04_152427_create_categories_table.php
+    - database/migrations/2024_05_04_152428_create_types_table.php
+    - database/migrations/2024_05_04_152429_create_payments_table.php
+    - database/migrations/2024_05_04_152430_create_units_table.php
+    - database/migrations/2024_05_04_152431_create_statuses_table.php
+    - database/migrations/2024_05_04_152432_create_product_type_table.php
     - app/Models/Customer.php
     - app/Models/Product.php
     - app/Models/Order.php
@@ -29,9 +28,9 @@ models:
     User: { name: string, email: string, email_verified_at: 'timestamp nullable', password: string, remember_token: 'string:100 nullable' }
     Customer: { full_name: string, email: 'string:100 unique', phone: 'string nullable', address: 'string nullable', relationships: { hasMany: Order } }
     Product: { product_image: string, name: string, stone_weight: integer, product_net_weight: integer, product_total_weight: integer, unit_id: 'unsignedInteger nullable', category_id: 'unsignedInteger nullable', type_id: 'unsignedInteger nullable', relationships: { belongsTo: 'Unit, Category', belongsToMany: Type } }
-    Order: { customer_id: 'unsignedInteger nullable', product_id: 'unsignedInteger nullable', status_id: 'unsignedInteger nullable', payment_id: 'unsignedInteger nullable', Received_date: date, Delivery_date: date, relationships: { belongsToMany: Payment, belongsTo: Status } }
+    Order: { customer_id: 'unsignedInteger nullable', product_id: 'unsignedInteger nullable', status_id: 'unsignedInteger nullable', payment_id: 'unsignedInteger nullable', Received_date: date, Delivery_date: date, relationships: { belongsTo: 'Status, Customer, Payment' } }
     Category: { name: string, relationships: { hasMany: Product } }
     Type: { name: string, relationships: { belongsToMany: Product } }
-    Payment: { name: string, relationships: { belongsToMany: Order } }
+    Payment: { name: string, relationships: { hasMany: Order } }
     Unit: { name: string, relationships: { hasMany: Product } }
     Status: { name: string, relationships: { hasMany: Order } }

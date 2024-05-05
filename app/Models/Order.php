@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Order extends Model
 {
@@ -30,13 +29,18 @@ class Order extends Model
         'Delivery_date' => 'date',
     ];
 
-    public function payments(): BelongsToMany
-    {
-        return $this->belongsToMany(Payment::class);
-    }
-
     public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
     }
 }

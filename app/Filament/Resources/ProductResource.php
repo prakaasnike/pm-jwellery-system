@@ -24,6 +24,7 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Forms\Components\FileUpload::make('product_image')
+                    ->label('Thumbnail')
                     ->image()
                     ->required(),
                 Forms\Components\TextInput::make('name')
@@ -42,7 +43,6 @@ class ProductResource extends Resource
                     ->relationship('unit', 'name'),
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name'),
-
                 Forms\Components\Select::make('type')
                     ->relationship('types', 'name')
                     ->multiple(),
@@ -53,27 +53,30 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('product_image'),
+                Tables\Columns\ImageColumn::make('product_image')
+                    ->label('Thumbnail'),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Product Name')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('stone_weight')
+                    ->label('Stone Weight')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product_net_weight')
+                    ->label('Net Weight')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product_total_weight')
+                    ->label('Total Weight')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('category.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type_id')
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('types.name'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -99,7 +102,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TypesRelationManager::class,
         ];
     }
 
