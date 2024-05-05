@@ -6,31 +6,32 @@ models:
     address: string nullable
     relationships:
       hasMany: Order
-      belongsTo: Order
 
   Product:
     product_image: string
     name: string
-    stone_weight: integer
+    stone_weight: decimal
     product_net_weight: integer
-    product_total_weight: integer
+    product_total_weight: decimal
     unit_id: unsignedInteger nullable
     category_id: unsignedInteger nullable
     type_id: unsignedInteger nullable
     relationships:
       belongsTo: Unit, Category
-      belongsToMany: Type
+      belongsToMany: Type, Order
 
   Order:
+    order_name: string
+    order_image: string
     customer_id: unsignedInteger nullable
     product_id: unsignedInteger nullable
     status_id: unsignedInteger nullable
     payment_id: unsignedInteger nullable
-    Received_date: date
-    Delivery_date: date
+    received_date: date
+    delivery_date: date
     relationships:
       belongsTo: Status, Customer, Payment
-      hasMany: Customer
+      belongsToMany: Product
 
   Category:
     name: string

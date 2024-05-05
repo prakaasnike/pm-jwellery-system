@@ -24,8 +24,11 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Forms\Components\FileUpload::make('product_image')
-                    ->label('Thumbnail')
                     ->image()
+                    ->maxFiles(1)
+                    ->preserveFilenames()
+                    ->maxSize(512 * 512 * 2)
+                    ->imagePreviewHeight('90')
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required()
@@ -34,7 +37,9 @@ class ProductResource extends Resource
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('product_net_weight')
-                    ->required()
+                    ->default(0)
+                    ->disabled()
+                    ->dehydrated()
                     ->numeric(),
                 Forms\Components\TextInput::make('product_total_weight')
                     ->required()
@@ -54,7 +59,9 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('product_image')
-                    ->label('Thumbnail'),
+                    ->label('Thumbnail')
+                    ->square()
+                    ->stacked(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Product Name')
                     ->searchable(),
@@ -68,7 +75,11 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('product_net_weight')
                     ->label('Net Weight')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->getStateUsing(function (Product $record) {
+                        return $record->product_total_weight - $record->stone_weight;
+                    }),
+
                 Tables\Columns\TextColumn::make('product_total_weight')
                     ->label('Total Weight')
                     ->numeric()
@@ -76,7 +87,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('unit.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('types.name'),
+                Tables\Columns\TextColumn::make('types.name')
+                    ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

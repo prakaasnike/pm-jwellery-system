@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use App\Filament\Resources\OrderResource\RelationManagers\CustomersRelationManager;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class OrderResource extends Resource
 {
@@ -22,28 +25,48 @@ class OrderResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $customers = Customer::all()->pluck('full_name', 'id');
+        $products = Product::all()->pluck('name', 'id');
+
         return $form
             ->schema([
+                Forms\Components\TextInput::make('order_name')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\FileUpload::make('order_image')
+                    ->image()
+                    ->maxFiles(4)
+                    ->multiple()
+                    ->preserveFilenames()
+                    ->imagePreviewHeight('90')
+                    ->maxSize(1024 * 1024 * 2),
                 Forms\Components\Select::make('customer_id')
                     ->relationship('customer', 'full_name')
-                    ->options(Customer::all()->pluck('full_name', 'id'))
+                    ->options($customers)
                     ->searchable(),
-                Forms\Components\TextInput::make('product_id')
-                    ->numeric(),
+
+                Forms\Components\Select::make('product')
+                    ->relationship('products', 'name')
+                    ->options($products)
+                    ->searchable()
+                    ->multiple(),
+
                 Forms\Components\Select::make('status_id')
                     ->relationship('status', 'name'),
                 Forms\Components\Select::make('payment_id')
                     ->relationship('payment', 'name'),
-                Forms\Components\DatePicker::make('Received_date')
+                Forms\Components\DatePicker::make('received_date')
                     ->required()
                     ->displayFormat('d/m/Y')
                     ->closeOnDateSelection()
+                    ->weekStartsOnSunday()
                     ->native(false),
-                Forms\Components\DatePicker::make('Delivery_date')
+                Forms\Components\DatePicker::make('delivery_date')
                     ->required()
                     ->displayFormat('d/m/Y')
                     ->weekStartsOnSunday()
-                    ->closeOnDateSelection(),
+                    ->closeOnDateSelection()
+                    ->native(false),
             ]);
     }
 
@@ -51,23 +74,30 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('order_name')
+                    ->searchable(),
+                Tables\Columns\ImageColumn::make('order_image')
+                    ->circular()
+                    ->stacked(),
                 Tables\Columns\TextColumn::make('customer.full_name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('product_id')
+
+                Tables\Columns\TextColumn::make('products.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('Received_date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('Delivery_date')
-                    ->date()
+
+                Tables\Columns\TextColumn::make('status.name')
+                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('payment.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status.name')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('received_date')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('delivery_date')
+                    ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -94,7 +124,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ProductsRelationManager::class,
         ];
     }
 

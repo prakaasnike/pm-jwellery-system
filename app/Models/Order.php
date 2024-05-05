@@ -5,18 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Order extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'order_name',
+        'order_image',
         'customer_id',
         'product_id',
         'status_id',
         'payment_id',
-        'Received_date',
-        'Delivery_date',
+        'received_date',
+        'delivery_date',
     ];
 
     protected $casts = [
@@ -25,8 +28,9 @@ class Order extends Model
         'product_id' => 'integer',
         'status_id' => 'integer',
         'payment_id' => 'integer',
-        'Received_date' => 'date',
-        'Delivery_date' => 'date',
+        'received_date' => 'date',
+        'delivery_date' => 'date',
+        'order_image' => 'array',
     ];
 
     public function status(): BelongsTo
@@ -42,5 +46,10 @@ class Order extends Model
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
     }
 }

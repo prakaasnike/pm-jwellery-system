@@ -23,12 +23,14 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
+            'order_name' => $this->faker->word(),
+            'order_image' => $this->faker->word(),
             'customer_id' => ::factory(),
             'product_id' => $this->faker->randomNumber(),
             'status_id' => Status::factory(),
             'payment_id' => ::factory(),
-            'Received_date' => $this->faker->date(),
-            'Delivery_date' => $this->faker->date(),
+            'received_date' => $this->faker->date(),
+            'delivery_date' => $this->faker->date(),
         ];
     }
 }

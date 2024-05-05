@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ProductResource\RelationManagers;
+namespace App\Filament\Resources\OrderResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -10,9 +10,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class TypesRelationManager extends RelationManager
+class ProductsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'types';
+    protected static string $relationship = 'products';
 
     public function form(Form $form): Form
     {
@@ -40,11 +40,11 @@ class TypesRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DetachAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
             ->emptyStateActions([
