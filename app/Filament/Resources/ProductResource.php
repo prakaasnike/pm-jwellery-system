@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
@@ -35,15 +36,22 @@ class ProductResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('stone_weight')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->inputMode('float'),
                 Forms\Components\TextInput::make('product_net_weight')
-                    ->default(0)
-                    ->disabled()
-                    ->dehydrated()
-                    ->numeric(),
+                    ->numeric()
+                    ->live(),
                 Forms\Components\TextInput::make('product_total_weight')
                     ->required()
-                    ->numeric(),
+                    ->numeric()
+                    ->afterStateUpdated(function (callable $get, callable $set) {
+                        $totalWeight = (float) $get('product_total_weight') ?? 0;
+                        $stoneWeight = (float) $get('stone_weight') ?? 0;
+                        $netWeight = $totalWeight - $stoneWeight;
+                        $set('product_net_weight', number_format($netWeight, 2));
+                        // Update the model attribute
+                        $set('model.product_net_weight', $netWeight);
+                    }),
                 Forms\Components\Select::make('unit_id')
                     ->relationship('unit', 'name'),
                 Forms\Components\Select::make('category_id')
