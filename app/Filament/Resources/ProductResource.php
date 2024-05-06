@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
@@ -11,8 +10,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
@@ -37,20 +34,36 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('stone_weight')
                     ->required()
                     ->numeric()
-                    ->inputMode('float'),
-                Forms\Components\TextInput::make('product_net_weight')
-                    ->numeric()
-                    ->live(),
-                Forms\Components\TextInput::make('product_total_weight')
-                    ->required()
-                    ->numeric()
+                    ->inputMode('float')
+                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
                     ->afterStateUpdated(function (callable $get, callable $set) {
                         $totalWeight = (float) $get('product_total_weight') ?? 0;
                         $stoneWeight = (float) $get('stone_weight') ?? 0;
                         $netWeight = $totalWeight - $stoneWeight;
                         $set('product_net_weight', number_format($netWeight, 2));
                         // Update the model attribute
-                        $set('model.product_net_weight', $netWeight);
+                        $set('model.product_net_weight', (float) $netWeight);
+
+                    }),
+                Forms\Components\TextInput::make('product_net_weight')
+                    ->numeric()
+                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
+                    ->live()
+                    ->inputMode('float')
+                    ->dehydrated(),
+                Forms\Components\TextInput::make('product_total_weight')
+                    ->required()
+                    ->numeric()
+                    ->inputMode('float')
+                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
+                    ->afterStateUpdated(function (callable $get, callable $set) {
+                        $totalWeight = (float) $get('product_total_weight') ?? 0;
+                        $stoneWeight = (float) $get('stone_weight') ?? 0;
+                        $netWeight = $totalWeight - $stoneWeight;
+                        $set('product_net_weight', number_format($netWeight, 2));
+                        // Update the model attribute
+                        $set('model.product_net_weight', (float) $netWeight);
+
                     }),
                 Forms\Components\Select::make('unit_id')
                     ->relationship('unit', 'name'),

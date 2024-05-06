@@ -24,6 +24,9 @@ class Product extends Model
 
     protected $casts = [
         'id' => 'integer',
+        'stone_weight' => 'decimal:2',
+        'product_net_weight' => 'decimal:2',
+        'product_total_weight' => 'decimal:2',
         'unit_id' => 'integer',
         'category_id' => 'integer',
         'type_id' => 'integer',
