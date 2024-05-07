@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('product_image');
             $table->string('name');
-            $table->decimal('stone_weight', 10, 2)->nullable();
-            $table->decimal('product_net_weight', 10, 2)->nullable();
-            $table->decimal('product_total_weight', 10, 2)->nullable();
+            $table->float('stone_weight')->nullable();
+            $table->float('product_net_weight')->nullable();
+            $table->float('product_total_weight')->nullable();
             $table->foreignId('unit_id')->nullable();
             $table->foreignId('category_id')->nullable();
             $table->unsignedInteger('type_id')->nullable();

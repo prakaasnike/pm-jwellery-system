@@ -8,6 +8,7 @@ use App\Filament\Resources\OrderResource\RelationManagers\CustomersRelationManag
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Status;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -35,11 +36,12 @@ class OrderResource extends Resource
                     ->maxLength(255),
                 Forms\Components\FileUpload::make('order_image')
                     ->image()
+                    ->directory('order_image')
                     ->maxFiles(4)
                     ->multiple()
                     ->preserveFilenames()
-                    ->imagePreviewHeight('90')
-                    ->maxSize(1024 * 1024 * 2),
+                    ->imagePreviewHeight('40')
+                    ->maxSize(512 * 512 * 2),
                 Forms\Components\Select::make('customer_id')
                     ->relationship('customer', 'full_name')
                     ->options($customers)
@@ -74,29 +76,40 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('customer.full_name')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('order_name')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('products.name')
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('order_image')
                     ->circular()
                     ->stacked(),
-                Tables\Columns\TextColumn::make('customer.full_name')
-                    ->numeric()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('products.name')
-                    ->numeric()
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('status.name')
-                    ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignEnd()
+                    // ->options(self::$statuses)
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Delivered' => 'success',
+                        'Ongoing' => 'warning',
+                        'Urgent' => 'danger',
+                        'Received' => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('payment.name')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Paid' => 'success',
+                        'Unpaid' => 'warning',
+                        'Initial Payment' => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('received_date')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('delivery_date')
+                    ->badge()
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -111,9 +124,13 @@ class OrderResource extends Resource
             ->filters([
                 //
             ])
+
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                ])
             ])
+            ->defaultSort('delivery_date', 'asc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

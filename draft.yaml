@@ -1,7 +1,7 @@
 models:
   Customer:
     full_name: string
-    email: string:100 unique
+    email: string nullable
     phone: string nullable
     address: string nullable
     relationships:
@@ -10,9 +10,9 @@ models:
   Product:
     product_image: string
     name: string
-    stone_weight: decimal:10,2 nullable # Change type to float
-    product_net_weight: decimal:10,2 nullable
-    product_total_weight: decimal:10,2 nullable
+    stone_weight: float nullable # Change type to float
+    product_net_weight: float nullable
+    product_total_weight: float nullable
     unit_id: unsignedInteger nullable
     category_id: unsignedInteger nullable
     type_id: unsignedInteger nullable
@@ -22,7 +22,7 @@ models:
 
   Order:
     order_name: string
-    order_image: string
+    order_image: string array
     customer_id: unsignedInteger nullable
     product_id: unsignedInteger nullable
     status_id: unsignedInteger nullable

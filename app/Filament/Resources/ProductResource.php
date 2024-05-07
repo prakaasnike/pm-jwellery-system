@@ -27,7 +27,7 @@ class ProductResource extends Resource
                     ->preserveFilenames()
                     ->maxSize(512 * 512 * 2)
                     ->imagePreviewHeight('90')
-                    ->required(),
+                ,
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -37,13 +37,12 @@ class ProductResource extends Resource
                     ->inputMode('float')
                     ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
                     ->afterStateUpdated(function (callable $get, callable $set) {
-                        $totalWeight = (float) $get('product_total_weight') ?? 0;
-                        $stoneWeight = (float) $get('stone_weight') ?? 0;
+                        $totalWeight = $get('product_total_weight') ?? 0;
+                        $stoneWeight = $get('stone_weight') ?? 0;
                         $netWeight = $totalWeight - $stoneWeight;
                         $set('product_net_weight', number_format($netWeight, 2));
                         // Update the model attribute
-                        $set('model.product_net_weight', (float) $netWeight);
-
+                        $set('model.product_net_weight', $netWeight);
                     }),
                 Forms\Components\TextInput::make('product_net_weight')
                     ->numeric()
@@ -57,13 +56,12 @@ class ProductResource extends Resource
                     ->inputMode('float')
                     ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
                     ->afterStateUpdated(function (callable $get, callable $set) {
-                        $totalWeight = (float) $get('product_total_weight') ?? 0;
-                        $stoneWeight = (float) $get('stone_weight') ?? 0;
+                        $totalWeight = $get('product_total_weight');
+                        $stoneWeight = $get('stone_weight');
                         $netWeight = $totalWeight - $stoneWeight;
                         $set('product_net_weight', number_format($netWeight, 2));
                         // Update the model attribute
-                        $set('model.product_net_weight', (float) $netWeight);
-
+                        $set('model.product_net_weight', $netWeight);
                     }),
                 Forms\Components\Select::make('unit_id')
                     ->relationship('unit', 'name'),

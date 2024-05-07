@@ -25,9 +25,9 @@ class ProductFactory extends Factory
         return [
             'product_image' => $this->faker->word(),
             'name' => $this->faker->name(),
-            'stone_weight' => $this->faker->randomFloat(2, 0, 99999999.99),
-            'product_net_weight' => $this->faker->randomFloat(2, 0, 99999999.99),
-            'product_total_weight' => $this->faker->randomFloat(2, 0, 99999999.99),
+            'stone_weight' => $this->faker->randomFloat(0, 0, 9999999999.),
+            'product_net_weight' => $this->faker->randomFloat(0, 0, 9999999999.),
+            'product_total_weight' => $this->faker->randomFloat(0, 0, 9999999999.),
             'unit_id' => Unit::factory(),
             'category_id' => ::factory(),
             'type_id' => $this->faker->randomNumber(),

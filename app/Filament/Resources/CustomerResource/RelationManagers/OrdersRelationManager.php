@@ -25,11 +25,12 @@ class OrdersRelationManager extends RelationManager
                     ->maxLength(255),
                 Forms\Components\FileUpload::make('order_image')
                     ->image()
+                    ->directory('order_image')
                     ->maxFiles(4)
                     ->multiple()
                     ->preserveFilenames()
                     ->imagePreviewHeight('40')
-                    ->maxSize(1024 * 1024 * 2),
+                    ->maxSize(512 * 512 * 2),
 
                 Forms\Components\Select::make('product')
                     ->relationship('products', 'name')

@@ -28,11 +28,17 @@ class CustomerResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->required()
-                    ->maxLength(100),
+                    ->unique(ignoreRecord: true)
+                    ->maxLength(100)
+                    ->nullable(),
                 Forms\Components\TextInput::make('phone')
+                    ->required()
+                    ->prefix('+977')
+                    ->unique(ignoreRecord: true)
                     ->tel()
-                    ->maxLength(255),
+                    ->numeric()
+                    ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')
+                    ->maxLength(10),
                 Forms\Components\TextInput::make('address')
                     ->maxLength(255),
             ]);
@@ -43,8 +49,8 @@ class CustomerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
-
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
@@ -52,6 +58,7 @@ class CustomerResource extends Resource
                 Tables\Columns\TextColumn::make('address')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -66,6 +73,7 @@ class CustomerResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
