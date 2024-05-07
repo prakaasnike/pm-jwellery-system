@@ -17,7 +17,7 @@ class TypeResource extends Resource
 {
     protected static ?string $model = Type::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-funnel';
 
     protected static ?string $navigationGroup = 'Users Setting';
 

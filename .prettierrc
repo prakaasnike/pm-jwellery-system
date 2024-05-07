@@ -1,6 +1,9 @@
 {
-    "plugins": ["prettier-plugin-blade", "prettier-plugin-tailwindcss"],
-    "semi": false,
+    "tabWidth": 4,
     "singleQuote": true,
-    "tailwindConfig": "./packages/panels/tailwind.config.js"
-}
+    "trailingComma": "all",
+    "semi": false,
+    "arrowParens": "avoid",
+    "printWidth": 120,
+    "endOfLine": "auto"
+  }
