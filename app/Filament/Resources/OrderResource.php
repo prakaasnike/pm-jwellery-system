@@ -86,14 +86,10 @@ class OrderResource extends Resource
                     ->circular()
                     ->stacked()
                     ->defaultImageUrl(function ($record) {
-                        // Array of possible background colors
-                        $backgrounds = ['d97706', '3498db', '2ecc71', 'e74c3c'];
-                        // Randomly select a background color
-                        $randomBackground = $backgrounds[array_rand($backgrounds)];
-                        // Generate a random name for the avatar
+                        // Generate random name for the avatar
                         $name = $record->order_name ?: 'Unknown';
-                        // Construct the URL with the random background color and name
-                        return 'https://ui-avatars.com/api/?background=' . $randomBackground . '&color=fff&name=' . urlencode($name);
+                        // Construct the URL with the random name
+                        return 'https://ui-avatars.com/api/?background=d97706&color=fff&name=' . urlencode($name);
                     }),
                 Tables\Columns\TextColumn::make('status.name')
                     ->sortable()
