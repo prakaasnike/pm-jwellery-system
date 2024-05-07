@@ -84,13 +84,23 @@ class OrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('order_image')
                     ->circular()
-                    ->stacked(),
+                    ->stacked()
+                    ->defaultImageUrl(function ($record) {
+                        // Array of possible background colors
+                        $backgrounds = ['d97706', '3498db', '2ecc71', 'e74c3c'];
+                        // Randomly select a background color
+                        $randomBackground = $backgrounds[array_rand($backgrounds)];
+                        // Generate a random name for the avatar
+                        $name = $record->order_name ?: 'Unknown';
+                        // Construct the URL with the random background color and name
+                        return 'https://ui-avatars.com/api/?background=' . $randomBackground . '&color=fff&name=' . urlencode($name);
+                    }),
                 Tables\Columns\TextColumn::make('status.name')
                     ->sortable()
                     ->alignEnd()
                     // ->options(self::$statuses)
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Delivered' => 'success',
                         'Ongoing' => 'warning',
                         'Urgent' => 'danger',
@@ -100,7 +110,7 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Paid' => 'success',
                         'Unpaid' => 'warning',
                         'Initial Payment' => 'gray',
