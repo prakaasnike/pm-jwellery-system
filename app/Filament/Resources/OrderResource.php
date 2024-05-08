@@ -88,6 +88,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('products.name')
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('order_image')
+                    ->label('Order Image')
                     ->circular()
                     ->stacked()
                     ->defaultImageUrl(function ($record) {
