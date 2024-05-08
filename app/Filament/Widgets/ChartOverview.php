@@ -71,7 +71,7 @@ class ChartOverview extends ApexChartWidget
         return [
             'chart' => [
                 'type' => 'line',
-                'height' => 300,
+                'height' => 250,
                 'toolbar' => [
                     'show' => false,
                 ],
