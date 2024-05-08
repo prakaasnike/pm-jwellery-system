@@ -1,0 +1,1 @@
+<img src={{asset('images/pm-jwellery-transparent.png')}} alt="Pm Jwellery" class="h-16" />

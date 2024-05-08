@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 
+use App\Filament\Widgets\ChartOverview;
 use App\Filament\Widgets\StatsOverview;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -21,9 +22,12 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+
 
 class AppPanelProvider extends PanelProvider
 {
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -35,6 +39,7 @@ class AppPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
                 'gray' => Color::Zinc,
             ])
+            ->favicon('images/pm-jwellery-transparent.png')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -45,7 +50,11 @@ class AppPanelProvider extends PanelProvider
                 //   Widgets\AccountWidget::class,
                 //   Widgets\FilamentInfoWidget::class,
                 StatsOverview::class,
+                ChartOverview::class,
 
+            ])
+            ->plugins([
+                FilamentApexChartsPlugin::make(), // Register the plugin
             ])
             ->middleware([
                 EncryptCookies::class,

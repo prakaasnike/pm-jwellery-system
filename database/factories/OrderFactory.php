@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
-use App\Models\;
 use App\Models\Order;
 use App\Models\Status;
+use App\Models\Customer; // Assuming the Customer model is used for the customer_id field
+use App\Models\Product; // Assuming the Product model is used for the product_id field
+use App\Models\Payment; // Assuming the Payment model is used for the payment_id field
 
 class OrderFactory extends Factory
 {
@@ -25,10 +26,10 @@ class OrderFactory extends Factory
         return [
             'order_name' => $this->faker->word(),
             'order_image' => $this->faker->word(),
-            'customer_id' => ::factory(),
-            'product_id' => $this->faker->randomNumber(),
+            'customer_id' => Customer::factory(),
+            'product_id' => Product::factory(),
             'status_id' => Status::factory(),
-            'payment_id' => ::factory(),
+            'payment_id' => Payment::factory(),
             'received_date' => $this->faker->date(),
             'delivery_date' => $this->faker->date(),
         ];
