@@ -38,6 +38,7 @@ class AppPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
                 'gray' => Color::Zinc,
+                'cyan' => Color::Cyan,
             ])
             ->favicon('images/pm-jwellery-transparent.png')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

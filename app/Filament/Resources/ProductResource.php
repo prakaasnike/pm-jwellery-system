@@ -25,9 +25,9 @@ class ProductResource extends Resource
                     ->image()
                     ->maxFiles(1)
                     ->preserveFilenames()
+                    ->directory('product-images')
                     ->maxSize(512 * 512 * 2)
-                    ->imagePreviewHeight('90')
-                ,
+                    ->imagePreviewHeight('90'),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),

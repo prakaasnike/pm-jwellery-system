@@ -36,7 +36,7 @@ class OrderResource extends Resource
                     ->maxLength(255),
                 Forms\Components\FileUpload::make('order_image')
                     ->image()
-                    ->directory('order_image')
+                    ->directory('order-images')
                     ->maxFiles(4)
                     ->multiple()
                     ->preserveFilenames()
@@ -78,7 +78,12 @@ class OrderResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('customer.full_name')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('customer.phone')
+                    ->label('Phone')
+                    ->badge()
+                    ->color('cyan'),
                 Tables\Columns\TextColumn::make('order_name')
+                    ->label('Order Name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('products.name')
                     ->sortable(),
@@ -112,6 +117,7 @@ class OrderResource extends Resource
                         'Initial Payment' => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('received_date')
+                    ->label('Order Date')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('delivery_date')

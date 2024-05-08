@@ -53,21 +53,21 @@ class ChartOverview extends ApexChartWidget
      */
     protected function getOptions(): array
     {
-// Fetch the total orders for each month
-$ordersByMonth = Order::query()
-    ->selectRaw('MONTH(received_date) as month, COUNT(*) as total_orders')
-    ->groupByRaw('MONTH(received_date)')
-    ->orderByRaw('MONTH(received_date)')
-    ->get();
+        // Fetch the total orders for each month
+        $ordersByMonth = Order::query()
+            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total_orders')
+            ->groupByRaw('MONTH(received_date)')
+            ->orderByRaw('MONTH(received_date)')
+            ->get();
 
-// Generate an array of all months within the date range of orders
-$allMonths = $ordersByMonth->map(function ($item) {
-    return (new \DateTime())->setDate(2000, $item->month, 1)->format('M');
-})->toArray();
+        // Generate an array of all months within the date range of orders
+        $allMonths = $ordersByMonth->map(function ($item) {
+            return (new \DateTime())->setDate(2000, $item->month, 1)->format('M');
+        })->toArray();
 
-// Fill in missing months with zero total orders
-$totalOrders = $ordersByMonth->pluck('total_orders')->toArray();
-  
+        // Fill in missing months with zero total orders
+        $totalOrders = $ordersByMonth->pluck('total_orders')->toArray();
+
         return [
             'chart' => [
                 'type' => 'line',

@@ -15,7 +15,7 @@ class StatsOverview extends BaseWidget
     {
         return [
             Stat::make('Customer', Customer::count())
-                ->description('Customers that have been joined recently')
+                ->description('Total Customers Joined')
                 ->descriptionIcon('heroicon-m-user-group', IconPosition::Before)
                 ->chart([4, 20, 5, 60, 30, 90, 30])
                 ->color('success'),
@@ -24,10 +24,10 @@ class StatsOverview extends BaseWidget
                 ->description('Orders that have been created recently')
                 ->descriptionIcon('heroicon-m-shopping-bag', IconPosition::Before)
                 ->chart([4, 20, 5, 60, 30, 90, 30])
-                ->color('danger'),
+                ->color('warning'),
 
             Stat::make('Product', Product::count())
-                ->description('Product that have been created recently')
+                ->description('Total Products in Stock')
                 ->descriptionIcon('heroicon-m-rectangle-stack', IconPosition::Before)
                 ->chart([4, 20, 5, 60, 30, 90, 30])
                 ->color('info')
