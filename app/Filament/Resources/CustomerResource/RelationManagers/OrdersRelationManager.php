@@ -25,7 +25,6 @@ class OrdersRelationManager extends RelationManager
                     ->maxLength(255),
                 Forms\Components\FileUpload::make('order_image')
                     ->image()
-                    ->directory('order-images')
                     ->maxFiles(4)
                     ->multiple()
                     ->preserveFilenames()
