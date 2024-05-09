@@ -8,7 +8,7 @@ models:
       hasMany: Order
 
   Product:
-    product_image: string
+    product_image: string required
     name: string
     stone_weight: float nullable # Change type to float
     product_net_weight: float nullable

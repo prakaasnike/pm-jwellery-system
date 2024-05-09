@@ -22,6 +22,7 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Forms\Components\FileUpload::make('product_image')
+                    ->required()
                     ->image()
                     ->maxFiles(1)
                     ->preserveFilenames()
