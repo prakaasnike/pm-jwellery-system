@@ -10,6 +10,13 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Status;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -31,43 +38,79 @@ class OrderResource extends Resource
 
         return $form
             ->schema([
-                Forms\Components\TextInput::make('order_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('order_image')
-                    ->image()
-                    ->maxFiles(4)
-                    ->multiple()
-                    ->preserveFilenames()
-                    ->imagePreviewHeight('40')
-                    ->maxSize(512 * 512 * 2),
-                Forms\Components\Select::make('customer_id')
-                    ->relationship('customer', 'full_name')
-                    ->options($customers)
-                    ->searchable(),
+                Section::make('Create an order for your customers')
+                    ->description('')
+                    ->schema([
+                        TextInput::make('order_name')
+                            ->label('Order')
+                            ->required()
+                            ->maxLength(255),
+                        Select::make('customer_id')
+                            ->relationship('customer', 'full_name')
+                            ->options($customers)
+                            ->searchable()
 
-                Forms\Components\Select::make('product')
-                    ->relationship('products', 'name')
-                    ->options($products)
-                    ->searchable()
-                    ->multiple(),
+                            ->required(),
 
-                Forms\Components\Select::make('status_id')
-                    ->relationship('status', 'name'),
-                Forms\Components\Select::make('payment_id')
-                    ->relationship('payment', 'name'),
-                Forms\Components\DatePicker::make('received_date')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->closeOnDateSelection()
-                    ->weekStartsOnSunday()
-                    ->native(false),
-                Forms\Components\DatePicker::make('delivery_date')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->weekStartsOnSunday()
-                    ->closeOnDateSelection()
-                    ->native(false),
+                        ToggleButtons::make('status')
+                            ->inline()
+                            ->required()
+                            ->options([
+                                'received' => 'received',
+                                'urgent' => 'urgent',
+                                'ongoing' => 'ongoing',
+                                'delivered' => 'delivered',
+                            ]),
+                        ToggleButtons::make('payment_status')
+                            ->label('Payment Status')
+                            ->inline()
+                            ->required()
+                            ->options([
+                                'paid' => 'paid',
+                                'unpaid' => 'unpaid',
+                                'initialpaid' => 'initialpaid',
+                            ]),
+                        DatePicker::make('received_date')
+                            ->required()
+                            ->displayFormat('d/m/Y')
+                            ->closeOnDateSelection()
+                            ->weekStartsOnSunday()
+                            ->native(false),
+                        DatePicker::make('delivery_date')
+                            ->required()
+                            ->displayFormat('d/m/Y')
+                            ->closeOnDateSelection()
+                            ->weekStartsOnSunday()
+                            ->native(false),
+                        Select::make('product_id')
+                            ->relationship('products', 'name')
+                            ->options($products)
+                            ->searchable()
+                            ->multiple()
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpan(2)
+                    ->columns(2),
+                Group::make()->schema([
+                    Section::make('Image')
+                        ->schema([
+                            FileUpload::make('order_image')
+                                ->image()
+                                ->maxFiles(4)
+                                ->multiple()
+                                ->preserveFilenames()
+                                ->imagePreviewHeight('40')
+                                ->maxSize(512 * 512 * 2),
+                        ]), // Section title should not be standalone
+                ])
+                    ->columnSpan(1),
+            ])
+
+            ->columns([
+                'default' => 3,
+                'sm' => 3,
+                'md' => 3,
+                'lg' => 3,
             ]);
     }
 
@@ -76,13 +119,14 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('customer.full_name')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('customer.phone')
                     ->label('Phone')
                     ->badge()
                     ->color('cyan'),
                 Tables\Columns\TextColumn::make('order_name')
-                    ->label('Order Name')
+                    ->label('Order')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('products.name')
                     ->sortable(),
@@ -96,26 +140,29 @@ class OrderResource extends Resource
                         // Construct the URL with the random name
                         return 'https://ui-avatars.com/api/?background=d97706&color=fff&name=' . urlencode($name);
                     }),
-                Tables\Columns\TextColumn::make('status.name')
+                Tables\Columns\TextColumn::make('status')
                     ->sortable()
                     ->alignEnd()
                     // ->options(self::$statuses)
                     ->badge()
+                    ->alignCenter()
                     ->color(fn (string $state): string => match ($state) {
-                        'Delivered' => 'success',
-                        'Ongoing' => 'warning',
-                        'Urgent' => 'danger',
-                        'Received' => 'gray',
+                        'delivered' => 'success',
+                        'ongoing' => 'warning',
+                        'urgent' => 'danger',
+                        'received' => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('payment.name')
+                Tables\Columns\TextColumn::make('payment_status')
                     ->numeric()
                     ->sortable()
+                    ->alignCenter()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'Paid' => 'success',
-                        'Unpaid' => 'warning',
-                        'Initial Payment' => 'gray',
-                    }),
+                        'paid' => 'success',
+                        'unpaid' => 'warning',
+                        'initialpaid' => 'gray',
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('received_date')
                     ->label('Order Date')
                     ->date()
@@ -153,7 +200,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ProductsRelationManager::class,
+            //
         ];
     }
 

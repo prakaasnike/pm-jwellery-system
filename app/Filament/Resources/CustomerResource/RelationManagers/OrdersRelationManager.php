@@ -4,6 +4,13 @@ namespace App\Filament\Resources\CustomerResource\RelationManagers;
 
 use App\Models\Product;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -20,38 +27,71 @@ class OrdersRelationManager extends RelationManager
         $products = Product::all()->pluck('name', 'id');
         return $form
             ->schema([
-                Forms\Components\TextInput::make('order_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('order_image')
-                    ->image()
-                    ->maxFiles(4)
-                    ->multiple()
-                    ->preserveFilenames()
-                    ->imagePreviewHeight('40')
-                    ->maxSize(512 * 512 * 2),
+                Section::make('Create an order for your customers')
+                    ->description('')
+                    ->schema([
+                        TextInput::make('order_name')
+                            ->required()
+                            ->maxLength(255),
 
-                Forms\Components\Select::make('product')
-                    ->relationship('products', 'name')
-                    ->options($products)
-                    ->searchable()
-                    ->multiple(),
-                Forms\Components\Select::make('status_id')
-                    ->relationship('status', 'name'),
-                Forms\Components\Select::make('payment_id')
-                    ->relationship('payment', 'name'),
-                Forms\Components\DatePicker::make('received_date')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->closeOnDateSelection()
-                    ->weekStartsOnSunday()
-                    ->native(false),
-                Forms\Components\DatePicker::make('delivery_date')
-                    ->required()
-                    ->displayFormat('d/m/Y')
-                    ->weekStartsOnSunday()
-                    ->closeOnDateSelection()
-                    ->native(false),
+                        ToggleButtons::make('status')
+                            ->inline()
+                            ->required()
+                            ->options([
+                                'received' => 'received',
+                                'urgent' => 'urgent',
+                                'ongoing' => 'ongoing',
+                                'delivered' => 'delivered',
+                            ]),
+                        ToggleButtons::make('payment_status')
+                            ->label('Payment Status')
+                            ->inline()
+                            ->required()
+                            ->options([
+                                'paid' => 'paid',
+                                'unpaid' => 'unpaid',
+                                'initialpaid' => 'initialpaid',
+                            ]),
+                        DatePicker::make('received_date')
+                            ->required()
+                            ->displayFormat('d/m/Y')
+                            ->closeOnDateSelection()
+                            ->weekStartsOnSunday()
+                            ->native(false),
+                        DatePicker::make('delivery_date')
+                            ->required()
+                            ->displayFormat('d/m/Y')
+                            ->closeOnDateSelection()
+                            ->weekStartsOnSunday()
+                            ->native(false),
+                        Select::make('product_id')
+                            ->relationship('products', 'name')
+                            ->options($products)
+                            ->searchable()
+                            ->multiple(),
+                    ])
+                    ->columnSpan(2)
+                    ->columns(2),
+                Group::make()->schema([
+                    Section::make('Image')
+                        ->schema([
+                            FileUpload::make('order_image')
+                                ->image()
+                                ->maxFiles(4)
+                                ->multiple()
+                                ->preserveFilenames()
+                                ->imagePreviewHeight('40')
+                                ->maxSize(512 * 512 * 2),
+                        ]), // Section title should not be standalone
+                ])
+                    ->columnSpan(1),
+            ])
+
+            ->columns([
+                'default' => 3,
+                'sm' => 3,
+                'md' => 3,
+                'lg' => 3,
             ]);
     }
 

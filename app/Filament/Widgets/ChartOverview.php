@@ -40,7 +40,7 @@ class ChartOverview extends ApexChartWidget
 
     protected function getFilters(): ?array
     {
-        $years = range(now()->year, 2023);
+        $years = range(now()->year, 2024);
 
         return $years;
     }
@@ -53,21 +53,41 @@ class ChartOverview extends ApexChartWidget
      */
     protected function getOptions(): array
     {
-        // Fetch the total orders for each month
-        $ordersByMonth = Order::query()
-            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total_orders')
+        $currentYear = $this->filter ?? now()->year;
+
+        // Fetch the total orders for each month based on received_date
+        $ordersByReceivedMonth = Order::query()
+            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total_orders_received')
+            ->whereYear('received_date', $currentYear)
             ->groupByRaw('MONTH(received_date)')
             ->orderByRaw('MONTH(received_date)')
-            ->get();
+            ->get()
+            ->keyBy('month');
 
-        // Generate an array of all months within the date range of orders
-        $allMonths = $ordersByMonth->map(function ($item) {
-            return (new \DateTime())->setDate(2000, $item->month, 1)->format('M');
-        })->toArray();
+        // Fetch the total orders for each month based on updated_at
+        $ordersByUpdatedMonth = Order::query()
+            ->selectRaw('MONTH(updated_at) as month, COUNT(*) as total_orders_updated')
+            ->whereYear('updated_at', $currentYear)
+            ->groupByRaw('MONTH(updated_at)')
+            ->orderByRaw('MONTH(updated_at)')
+            ->get()
+            ->keyBy('month');
 
-        // Fill in missing months with zero total orders
-        $totalOrders = $ordersByMonth->pluck('total_orders')->toArray();
+        // Initialize arrays for all months
+        $allMonths = [];
+        $totalOrders = [];
 
+        // Calculate the combined total orders for each month
+        for ($month = 1; $month <= 12; $month++) {
+            $allMonths[] = \DateTime::createFromFormat('!m', $month)->format('M');
+
+            // Get received and updated orders count for the month
+            $receivedOrders = $ordersByReceivedMonth->get($month)->total_orders_received ?? 0;
+            $updatedOrders = $ordersByUpdatedMonth->get($month)->total_orders_updated ?? 0;
+
+            // Subtract updated orders from received orders to avoid double counting
+            $totalOrders[] = $receivedOrders - ($ordersByUpdatedMonth->get($month)->total_orders_updated ?? 0) + $updatedOrders;
+        }
         return [
             'chart' => [
                 'type' => 'line',

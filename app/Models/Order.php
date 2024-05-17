@@ -16,8 +16,8 @@ class Order extends Model
         'order_image',
         'customer_id',
         'product_id',
-        'status_id',
-        'payment_id',
+        'status',
+        'payment_status',
         'received_date',
         'delivery_date',
     ];
@@ -26,26 +26,14 @@ class Order extends Model
         'id' => 'integer',
         'customer_id' => 'integer',
         'product_id' => 'integer',
-        'status_id' => 'integer',
-        'payment_id' => 'integer',
         'received_date' => 'date',
         'delivery_date' => 'date',
         'order_image' => 'array',
     ];
 
-    public function status(): BelongsTo
-    {
-        return $this->belongsTo(Status::class);
-    }
-
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function payment(): BelongsTo
-    {
-        return $this->belongsTo(Payment::class);
     }
 
     public function products(): BelongsToMany

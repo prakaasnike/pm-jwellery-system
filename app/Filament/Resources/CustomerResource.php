@@ -6,6 +6,8 @@ use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -23,24 +25,45 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('full_name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(100)
-                    ->nullable(),
-                Forms\Components\TextInput::make('phone')
-                    ->required()
-                    ->prefix('+977')
-                    ->unique(ignoreRecord: true)
-                    ->tel()
-                    ->numeric()
-                    ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')
-                    ->maxLength(10),
-                Forms\Components\TextInput::make('address')
-                    ->maxLength(255),
+                Section::make('Create a Customer')
+                    ->description('Enter your customers details')
+                    ->schema([
+                        Forms\Components\TextInput::make('full_name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email address')
+                            ->email()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(100)
+                            ->nullable(),
+                        Forms\Components\TextInput::make('phone')
+                            ->prefix('+977')
+                            ->unique(ignoreRecord: true)
+                            ->tel()
+                            ->numeric()
+                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')
+                            ->maxLength(10),
+                        Forms\Components\TextInput::make('address')
+                            ->maxLength(255),
+                    ])->columnSpan(2)->columns(2),
+                Section::make()
+                    ->schema([
+                        Forms\Components\Placeholder::make('created_at')
+                            ->label('Created at')
+                            ->content(fn (Customer $record): ?string => $record->created_at?->diffForHumans()),
+
+                        Forms\Components\Placeholder::make('updated_at')
+                            ->label('Last modified at')
+                            ->content(fn (Customer $record): ?string => $record->updated_at?->diffForHumans()),
+
+                    ])->columnSpan(1),
+            ])
+            ->columns([
+                'default' => 3,
+                'sm' => 3,
+                'md' => 3,
+                'lg' => 3,
             ]);
     }
 

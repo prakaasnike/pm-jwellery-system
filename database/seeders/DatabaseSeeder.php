@@ -2,10 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Type;
+use App\Models\Unit;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,14 +20,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Create a single FilamentUser
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'admin',
+            'email' => 'admin@gmail.com',
+            'password' => Hash::make('admin'),
         ]);
 
-        Customer::factory()
-            ->count(5)
-            ->create();
-
+        Customer::factory()->count(5)->create();
+        Type::factory()->count(10)->create();
+        Category::factory()->count(10)->create();
+        Unit::factory()->count(1)->create();
     }
 }

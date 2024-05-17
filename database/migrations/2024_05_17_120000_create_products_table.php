@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('product_image');
             $table->string('name');
+            $table->string('stone_name')->nullable();
             $table->float('stone_weight')->nullable();
             $table->float('product_net_weight')->nullable();
             $table->float('product_total_weight')->nullable();

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('order_image');
             $table->foreignId('customer_id')->nullable();
             $table->unsignedInteger('product_id')->nullable();
-            $table->foreignId('status_id')->nullable();
-            $table->foreignId('payment_id')->nullable();
+            $table->enum('status', ["received","urgent","ongoing","delivered"]);
+            $table->enum('payment_status', ["paid","unpaid","initialpaid"]);
             $table->date('received_date');
             $table->date('delivery_date');
             $table->timestamps();

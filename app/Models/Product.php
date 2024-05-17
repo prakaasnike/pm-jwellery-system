@@ -14,6 +14,7 @@ class Product extends Model
     protected $fillable = [
         'product_image',
         'name',
+        'stone_name',
         'stone_weight',
         'product_net_weight',
         'product_total_weight',
@@ -42,13 +43,13 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function types(): BelongsToMany
-    {
-        return $this->belongsToMany(Type::class);
-    }
-
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class);
+    }
+
+    public function types(): BelongsToMany
+    {
+        return $this->belongsToMany(Type::class);
     }
 }

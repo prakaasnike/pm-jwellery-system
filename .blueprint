@@ -4,34 +4,26 @@ created:
     - database/factories/OrderFactory.php
     - database/factories/CategoryFactory.php
     - database/factories/TypeFactory.php
-    - database/factories/PaymentFactory.php
     - database/factories/UnitFactory.php
-    - database/factories/StatusFactory.php
-    - database/migrations/2024_05_06_191050_create_customers_table.php
-    - database/migrations/2024_05_06_191051_create_products_table.php
-    - database/migrations/2024_05_06_191052_create_orders_table.php
-    - database/migrations/2024_05_06_191053_create_categories_table.php
-    - database/migrations/2024_05_06_191054_create_types_table.php
-    - database/migrations/2024_05_06_191055_create_payments_table.php
-    - database/migrations/2024_05_06_191056_create_units_table.php
-    - database/migrations/2024_05_06_191057_create_statuses_table.php
-    - database/migrations/2024_05_06_191058_create_product_type_table.php
-    - database/migrations/2024_05_06_191059_create_order_product_table.php
+    - database/migrations/2024_05_17_115959_create_customers_table.php
+    - database/migrations/2024_05_17_120000_create_products_table.php
+    - database/migrations/2024_05_17_120001_create_orders_table.php
+    - database/migrations/2024_05_17_120002_create_categories_table.php
+    - database/migrations/2024_05_17_120003_create_types_table.php
+    - database/migrations/2024_05_17_120004_create_units_table.php
+    - database/migrations/2024_05_17_120005_create_order_product_table.php
+    - database/migrations/2024_05_17_120006_create_product_type_table.php
     - app/Models/Customer.php
     - app/Models/Product.php
     - app/Models/Order.php
     - app/Models/Category.php
     - app/Models/Type.php
-    - app/Models/Payment.php
     - app/Models/Unit.php
-    - app/Models/Status.php
 models:
     User: { name: string, email: string, email_verified_at: 'timestamp nullable', password: string, remember_token: 'string:100 nullable' }
     Customer: { full_name: string, email: 'string nullable', phone: 'string nullable', address: 'string nullable', relationships: { hasMany: Order } }
-    Product: { product_image: string, name: string, stone_weight: 'float nullable', product_net_weight: 'float nullable', product_total_weight: 'float nullable', unit_id: 'unsignedInteger nullable', category_id: 'unsignedInteger nullable', type_id: 'unsignedInteger nullable', relationships: { belongsTo: 'Unit, Category', belongsToMany: 'Type, Order' } }
-    Order: { order_name: string, order_image: string, customer_id: 'unsignedInteger nullable', product_id: 'unsignedInteger nullable', status_id: 'unsignedInteger nullable', payment_id: 'unsignedInteger nullable', received_date: date, delivery_date: date, relationships: { belongsTo: 'Status, Customer, Payment', belongsToMany: Product } }
+    Product: { product_image: 'string required', name: string, stone_name: 'string nullable', stone_weight: 'float nullable', product_net_weight: 'float nullable', product_total_weight: 'float nullable', unit_id: 'unsignedInteger nullable', category_id: 'unsignedInteger nullable', type_id: 'unsignedInteger nullable', relationships: { belongsTo: 'Unit, Category', belongsToMany: 'Order, Type' } }
+    Order: { order_name: string, order_image: string, customer_id: 'unsignedInteger nullable', product_id: 'unsignedInteger nullable', status: 'enum:received,urgent,ongoing,delivered', payment_status: 'enum:paid,unpaid,initialpaid', received_date: date, delivery_date: date, relationships: { belongsTo: Customer, belongsToMany: Product } }
     Category: { name: string, relationships: { hasMany: Product } }
     Type: { name: string, relationships: { belongsToMany: Product } }
-    Payment: { name: string, relationships: { hasMany: Order } }
     Unit: { name: string, relationships: { hasMany: Product } }
-    Status: { name: string, relationships: { hasMany: Order } }

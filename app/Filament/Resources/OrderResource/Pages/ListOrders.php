@@ -26,32 +26,24 @@ class ListOrders extends ListRecords
     public function getTabs(): array
     {
         return [
+            'All' => Tab::make('All Orders'),
+            'received' => Tab::make('Received')
+                ->modifyQueryUsing(function ($query) {
+                    return $query->where('status', 'received');
+                }),
+            'urgent' => Tab::make('Urgent')
+                ->modifyQueryUsing(function ($query) {
+                    return $query->where('status', 'urgent');
+                }),
+            'ongoing' => Tab::make('Ongoing')
+                ->modifyQueryUsing(function ($query) {
+                    return $query->where('status', 'ongoing');
+                }),
+            'delivered' => Tab::make('Delivered')
+                ->modifyQueryUsing(function ($query) {
+                    return $query->where('status', 'delivered');
+                }),
 
-            'all' => Tab::make('All Orders'),
-            'received Order' => Tab::make('Received Order')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->whereHas('status', function ($query) {
-                        $query->where('name', 'Received');
-                    });
-                }),
-            'urgent Order' => Tab::make('Urgent Orders')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->whereHas('status', function ($query) {
-                        $query->where('name', 'Urgent');
-                    });
-                }),
-            'ongoing Order' => Tab::make('Ongoing Orders')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->whereHas('status', function ($query) {
-                        $query->where('name', 'Ongoing');
-                    });
-                }),
-            'delivered Order' => Tab::make('Delivered Orders')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->whereHas('status', function ($query) {
-                        $query->where('name', 'Delivered');
-                    });
-                }),
 
         ]; // Add a semicolon here
     }
