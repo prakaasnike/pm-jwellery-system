@@ -46,7 +46,9 @@ class CustomerResource extends Resource
                             ->maxLength(10),
                         Forms\Components\TextInput::make('address')
                             ->maxLength(255),
-                    ])->columnSpan(2)->columns(2),
+                    ])
+                    ->columnSpan(['lg' => fn (?Customer $record) => $record === null ? 3 : 2])
+                    ->columns(2),
                 Section::make()
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
@@ -57,7 +59,9 @@ class CustomerResource extends Resource
                             ->label('Last modified at')
                             ->content(fn (Customer $record): ?string => $record->updated_at?->diffForHumans()),
 
-                    ])->columnSpan(1),
+                    ])
+                    ->columnSpan(['lg' => 1])
+                    ->hidden(fn (?Customer $record) => $record === null),
             ])
             ->columns([
                 'default' => 3,
