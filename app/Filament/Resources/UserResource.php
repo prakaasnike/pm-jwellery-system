@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CustomerResource\Pages;
-use App\Filament\Resources\CustomerResource\RelationManagers;
-use App\Models\Customer;
+use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,10 +14,11 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class CustomerResource extends Resource
+class UserResource extends Resource
 {
-    protected static ?int $navigationSort = 1;
-    protected static ?string $model = Customer::class;
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Users Setting';
+    protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -26,43 +26,37 @@ class CustomerResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Create a Customer')
-                    ->description('Enter your customers details')
+                Section::make('Create a User')
+                    ->description('Enter your users details')
                     ->schema([
-                        Forms\Components\TextInput::make('full_name')
+                        Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('email')
-                            ->label('Email address')
                             ->email()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(100)
-                            ->nullable(),
-                        Forms\Components\TextInput::make('phone')
-                            ->prefix('+977')
-                            ->unique(ignoreRecord: true)
-                            ->tel()
-                            ->numeric()
-                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')
-                            ->maxLength(10),
-                        Forms\Components\TextInput::make('address')
+                            ->required()
+                            ->maxLength(255),
+                        //   Forms\Components\DateTimePicker::make('email_verified_at'),
+                        Forms\Components\TextInput::make('password')
+                            ->password()
+                            ->required()
                             ->maxLength(255),
                     ])
-                    ->columnSpan(['lg' => fn (?Customer $record) => $record === null ? 3 : 2])
+                    ->columnSpan(['lg' => fn (?User $record) => $record === null ? 3 : 2])
                     ->columns(2),
                 Section::make()
                     ->schema([
                         Forms\Components\Placeholder::make('created_at')
                             ->label('Created at')
-                            ->content(fn (Customer $record): ?string => $record->created_at?->diffForHumans()),
+                            ->content(fn (User $record): ?string => $record->created_at?->diffForHumans()),
 
                         Forms\Components\Placeholder::make('updated_at')
                             ->label('Last modified at')
-                            ->content(fn (Customer $record): ?string => $record->updated_at?->diffForHumans()),
+                            ->content(fn (User $record): ?string => $record->updated_at?->diffForHumans()),
 
                     ])
                     ->columnSpan(['lg' => 1])
-                    ->hidden(fn (?Customer $record) => $record === null),
+                    ->hidden(fn (?User $record) => $record === null),
             ])
             ->columns([
                 'default' => 3,
@@ -76,17 +70,14 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('full_name')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('phone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->dateTime()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -101,7 +92,6 @@ class CustomerResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-            ->defaultSort('created_at', 'desc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -112,16 +102,16 @@ class CustomerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\OrdersRelationManager::class,
+            //
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCustomers::route('/'),
-            'create' => Pages\CreateCustomer::route('/create'),
-            'edit' => Pages\EditCustomer::route('/{record}/edit'),
+            'index' => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }
