@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Widgets\ChartOverview;
 use App\Filament\Widgets\StatsOverview;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -56,6 +57,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(), // Register the plugin
+                FilamentShieldPlugin::make(),
             ])
             ->middleware([
                 EncryptCookies::class,

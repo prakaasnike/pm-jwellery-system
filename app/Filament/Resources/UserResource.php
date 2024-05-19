@@ -41,6 +41,10 @@ class UserResource extends Resource
                             ->password()
                             ->required()
                             ->maxLength(255),
+                        Forms\Components\Select::make('roles')
+                            ->preload()
+                            ->multiple()
+                            ->relationship('roles', 'name'),
                     ])
                     ->columnSpan(['lg' => fn (?User $record) => $record === null ? 3 : 2])
                     ->columns(2),
@@ -74,9 +78,7 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('roles.name'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
