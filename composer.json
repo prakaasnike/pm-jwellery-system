@@ -9,6 +9,7 @@
         "aymanalhattami/filament-slim-scrollbar": "^2.0",
         "bezhansalleh/filament-shield": "^3.0@beta",
         "filament/filament": "^3.2",
+        "filament/notifications": "^3.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "leandrocfe/filament-apex-charts": "^3.1"

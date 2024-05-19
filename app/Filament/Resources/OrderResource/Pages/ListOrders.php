@@ -26,7 +26,7 @@ class ListOrders extends ListRecords
     public function getTabs(): array
     {
         return [
-            'All' => Tab::make('All Orders'),
+            'All' => Tab::make('All'),
             'received' => Tab::make('Received')
                 ->modifyQueryUsing(function ($query) {
                     return $query->where('status', 'received');

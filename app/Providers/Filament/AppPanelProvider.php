@@ -59,6 +59,7 @@ class AppPanelProvider extends PanelProvider
                 FilamentApexChartsPlugin::make(), // Register the plugin
                 FilamentShieldPlugin::make(),
             ])
+            ->databaseNotifications()
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
