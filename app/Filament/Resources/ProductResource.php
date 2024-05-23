@@ -20,7 +20,7 @@ class ProductResource extends Resource
     protected static ?int $navigationSort = 3;
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
 
     public static function form(Form $form): Form
     {
@@ -93,7 +93,6 @@ class ProductResource extends Resource
                         ->collapsible()
                         ->schema([
                             Forms\Components\FileUpload::make('product_image')
-                                ->required()
                                 ->image()
                                 ->maxFiles(1)
                                 ->preserveFilenames()
