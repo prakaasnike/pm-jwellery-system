@@ -21,15 +21,21 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         // Create a single FilamentUser
-        User::factory()->create([
+        $user1 = User::factory()->create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('admin'),
         ]);
 
-        Customer::factory()->count(5)->create();
-        Type::factory()->count(10)->create();
-        Category::factory()->count(10)->create();
-        Unit::factory()->count(1)->create();
+        $user2 = User::factory()->create([
+            'name' => 'test',
+            'email' => 'test@gmail.com',
+            'password' => Hash::make('test'),
+        ]);
+
+        // Customer::factory()->count(0)->create();
+        // Type::factory()->count(0)->create();
+        // Category::factory()->count(0)->create();
+        // Unit::factory()->count(1)->create();
     }
 }

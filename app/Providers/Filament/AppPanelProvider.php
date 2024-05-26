@@ -57,7 +57,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(), // Register the plugin
-                FilamentShieldPlugin::make(),
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
             ])
             ->databaseNotifications()
             ->middleware([

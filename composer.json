@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.2",
         "aymanalhattami/filament-slim-scrollbar": "^2.0",
-        "bezhansalleh/filament-shield": "^3.0@beta",
+        "bezhansalleh/filament-shield": "^3.2",
         "filament/filament": "^3.2",
         "filament/notifications": "^3.2",
         "laravel/framework": "^11.0",
