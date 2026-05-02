@@ -17,6 +17,11 @@ class TelegramNotifier
 
     public function sendToAdmin(string $message): bool
     {
+        return $this->sendToChat((string) $this->adminChatId(), $message);
+    }
+
+    public function sendToChat(string $chatId, string $message): bool
+    {
         if (! $this->enabled()) {
             return false;
         }
@@ -28,7 +33,7 @@ class TelegramNotifier
                     'verify' => (bool) config('services.telegram.verify_ssl'),
                 ])
                 ->post($this->endpoint('sendMessage'), [
-                    'chat_id' => $this->adminChatId(),
+                    'chat_id' => trim($chatId),
                     'text' => $message,
                     'disable_web_page_preview' => true,
                 ]);

@@ -11,6 +11,8 @@ class Order extends Model
 {
     use HasFactory;
 
+    public const NOTIFIABLE_STATUSES = ['received', 'urgent', 'ongoing'];
+
     protected $fillable = [
         'order_name',
         'order_image',

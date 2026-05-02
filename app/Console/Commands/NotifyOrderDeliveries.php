@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Cache;
 
 class NotifyOrderDeliveries extends Command
 {
-    private const NOTIFIABLE_STATUSES = ['received', 'urgent', 'ongoing'];
-
     protected $signature = 'orders:notify-deliveries';
 
     protected $description = 'Send delivery date notifications for orders due today and tomorrow';
@@ -30,13 +28,13 @@ class NotifyOrderDeliveries extends Command
         $dueToday = Order::query()
             ->with('customer.user')
             ->whereDate('delivery_date', $today)
-            ->whereIn('status', self::NOTIFIABLE_STATUSES)
+            ->whereIn('status', Order::NOTIFIABLE_STATUSES)
             ->get();
 
         $dueTomorrow = Order::query()
             ->with('customer.user')
             ->whereDate('delivery_date', $tomorrow)
-            ->whereIn('status', self::NOTIFIABLE_STATUSES)
+            ->whereIn('status', Order::NOTIFIABLE_STATUSES)
             ->get();
 
         $adminNotifications = $this->sendReminders(
