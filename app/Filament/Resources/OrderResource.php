@@ -144,8 +144,53 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('order_name')
                     ->label('Order')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('products.name')
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable()
+                    ->badge()
+                    ->alignCenter()
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->color(fn (string $state): string => match ($state) {
+                        'delivered' => 'success',
+                        'ongoing' => 'warning',
+                        'urgent' => 'danger',
+                        'received' => 'gray',
+                    })
+                    ->action(
+                        Tables\Actions\Action::make('changeStatus')
+                            ->label('Change Status')
+                            ->icon('heroicon-o-arrow-path')
+                            ->modalHeading(fn (Order $record): string => "Change status: {$record->order_name}")
+                            ->fillForm(fn (Order $record): array => [
+                                'status' => $record->status,
+                            ])
+                            ->form([
+                                Select::make('status')
+                                    ->label('Status')
+                                    ->required()
+                                    ->options([
+                                        'received' => 'Received',
+                                        'urgent' => 'Urgent',
+                                        'ongoing' => 'Ongoing',
+                                        'delivered' => 'Delivered',
+                                    ])
+                                    ->native(false),
+                            ])
+                            ->action(fn (Order $record, array $data): bool => $record->update([
+                                'status' => $data['status'],
+                            ]))
+                            ->visible(fn (Order $record): bool => auth()->user()?->can('update', $record) ?? false),
+                    ),
+                Tables\Columns\TextColumn::make('received_date')
+                    ->label('Order Date')
+                    ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('delivery_date')
+                    ->badge()
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('products.name')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\ImageColumn::make('order_image')
                     ->label('Order Image')
                     ->circular()
@@ -156,19 +201,8 @@ class OrderResource extends Resource
 
                         // Construct the URL with the random name
                         return 'https://ui-avatars.com/api/?background=d97706&color=fff&name='.urlencode($name);
-                    }),
-                Tables\Columns\TextColumn::make('status')
-                    ->sortable()
-                    ->alignEnd()
-                    // ->options(self::$statuses)
-                    ->badge()
-                    ->alignCenter()
-                    ->color(fn (string $state): string => match ($state) {
-                        'delivered' => 'success',
-                        'ongoing' => 'warning',
-                        'urgent' => 'danger',
-                        'received' => 'gray',
-                    }),
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('payment_status')
                     ->numeric()
                     ->sortable()
@@ -180,14 +214,6 @@ class OrderResource extends Resource
                         'initialpaid' => 'gray',
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('received_date')
-                    ->label('Order Date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('delivery_date')
-                    ->badge()
-                    ->date()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -203,7 +229,8 @@ class OrderResource extends Resource
 
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn (Order $record): bool => auth()->user()?->can('update', $record) ?? false),
                 ]),
             ])
             ->defaultSort('delivery_date', 'asc')
