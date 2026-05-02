@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\laragon\\\\www\\\\pmj\\\\database\\\\seeders\" -Filter \"*.php\")",
-      "Bash(Select-Object -ExpandProperty Name)"
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(php artisan *)",
+      "Bash(del c:\\\\laragon\\\\www\\\\pmj\\\\test_notification.php)"
     ]
   }
 }
