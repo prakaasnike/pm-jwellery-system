@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CustomerPolicy
@@ -23,7 +23,7 @@ class CustomerPolicy
      */
     public function view(User $user, Customer $customer): bool
     {
-        return $user->can('view_customer');
+        return $user->can('view_customer') && ($user->hasRole('super_admin') || $customer->user_id === $user->id);
     }
 
     /**
@@ -31,7 +31,7 @@ class CustomerPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_customer');
+        return $user->hasRole('super_admin') && $user->can('create_customer');
     }
 
     /**
@@ -39,7 +39,7 @@ class CustomerPolicy
      */
     public function update(User $user, Customer $customer): bool
     {
-        return $user->can('update_customer');
+        return $user->hasRole('super_admin') && $user->can('update_customer');
     }
 
     /**
@@ -47,7 +47,7 @@ class CustomerPolicy
      */
     public function delete(User $user, Customer $customer): bool
     {
-        return $user->can('delete_customer');
+        return $user->hasRole('super_admin') && $user->can('delete_customer');
     }
 
     /**
@@ -55,7 +55,7 @@ class CustomerPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_customer');
+        return $user->hasRole('super_admin') && $user->can('delete_any_customer');
     }
 
     /**
@@ -63,7 +63,7 @@ class CustomerPolicy
      */
     public function forceDelete(User $user, Customer $customer): bool
     {
-        return $user->can('force_delete_customer');
+        return $user->hasRole('super_admin') && $user->can('force_delete_customer');
     }
 
     /**
@@ -71,7 +71,7 @@ class CustomerPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_customer');
+        return $user->hasRole('super_admin') && $user->can('force_delete_any_customer');
     }
 
     /**
@@ -79,7 +79,7 @@ class CustomerPolicy
      */
     public function restore(User $user, Customer $customer): bool
     {
-        return $user->can('restore_customer');
+        return $user->hasRole('super_admin') && $user->can('restore_customer');
     }
 
     /**
@@ -87,7 +87,7 @@ class CustomerPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_customer');
+        return $user->hasRole('super_admin') && $user->can('restore_any_customer');
     }
 
     /**
@@ -95,7 +95,7 @@ class CustomerPolicy
      */
     public function replicate(User $user, Customer $customer): bool
     {
-        return $user->can('replicate_customer');
+        return $user->hasRole('super_admin') && $user->can('replicate_customer');
     }
 
     /**
@@ -103,6 +103,6 @@ class CustomerPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_customer');
+        return $user->hasRole('super_admin') && $user->can('reorder_customer');
     }
 }

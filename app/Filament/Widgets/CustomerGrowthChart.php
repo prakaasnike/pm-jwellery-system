@@ -9,12 +9,19 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class CustomerGrowthChart extends ApexChartWidget
 {
     protected static ?string $chartId = 'customerGrowthChart';
-    protected int | string | array $columnSpan = 1;
+
+    protected int|string|array $columnSpan = 1;
+
     protected static ?int $contentHeight = 300;
+
+    public static function canView(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') ?? false;
+    }
 
     protected function getHeading(): ?string
     {
-        return 'New Customers — ' . now()->year;
+        return 'New Customers — '.now()->year;
     }
 
     protected function getOptions(): array
@@ -29,13 +36,13 @@ class CustomerGrowthChart extends ApexChartWidget
         $data = [];
         for ($m = 1; $m <= 12; $m++) {
             $categories[] = Carbon::create()->month($m)->format('M');
-            $data[]       = (int) ($byMonth[$m] ?? 0);
+            $data[] = (int) ($byMonth[$m] ?? 0);
         }
 
         return [
             'chart' => [
-                'type'    => 'area',
-                'height'  => 270,
+                'type' => 'area',
+                'height' => 270,
                 'toolbar' => ['show' => false],
                 'animations' => ['enabled' => true, 'speed' => 400],
             ],
@@ -48,25 +55,25 @@ class CustomerGrowthChart extends ApexChartWidget
                 'categories' => $categories,
                 'labels' => ['style' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
                 'axisBorder' => ['show' => false],
-                'axisTicks'  => ['show' => false],
+                'axisTicks' => ['show' => false],
             ],
             'yaxis' => [
-                'min'            => 0,
+                'min' => 0,
                 'forceNiceScale' => true,
-                'labels'         => ['style' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
+                'labels' => ['style' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
             ],
-            'grid'   => ['borderColor' => '#374151', 'strokeDashArray' => 4],
+            'grid' => ['borderColor' => '#374151', 'strokeDashArray' => 4],
             'legend' => ['labels' => ['colors' => '#9ca3af']],
             'colors' => ['#6366f1'],
-            'fill'   => [
-                'type'     => 'gradient',
+            'fill' => [
+                'type' => 'gradient',
                 'gradient' => [
-                    'shade'          => 'dark',
-                    'type'           => 'vertical',
+                    'shade' => 'dark',
+                    'type' => 'vertical',
                     'shadeIntensity' => 0.4,
-                    'opacityFrom'    => 0.7,
-                    'opacityTo'      => 0.1,
-                    'stops'          => [0, 100],
+                    'opacityFrom' => 0.7,
+                    'opacityTo' => 0.1,
+                    'stops' => [0, 100],
                 ],
             ],
             'tooltip' => ['theme' => 'dark'],

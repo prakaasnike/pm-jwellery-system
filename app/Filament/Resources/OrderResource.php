@@ -3,13 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
-use App\Filament\Resources\OrderResource\RelationManagers\CustomersRelationManager;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Status;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Group;
@@ -22,19 +18,38 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 
 class OrderResource extends Resource
 {
     protected static ?int $navigationSort = 2;
+
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+
+        if (! $user || $user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        return $query->whereHas('customer', fn (Builder $query) => $query->where('user_id', $user->id));
+    }
+
     public static function form(Form $form): Form
     {
-        $customers = Customer::all()->pluck('full_name', 'id');
+        $user = auth()->user();
+        $customerQuery = Customer::query();
+
+        if ($user && ! $user->hasRole('super_admin')) {
+            $customerQuery->where('user_id', $user->id);
+        }
+
+        $customers = $customerQuery->pluck('full_name', 'id');
         $products = Product::all()->pluck('name', 'id');
 
         return $form
@@ -50,7 +65,7 @@ class OrderResource extends Resource
                             ->relationship('customer', 'full_name')
                             ->options($customers)
                             ->searchable()
-
+                            ->disabled(fn () => auth()->user()?->hasRole('super_admin') === false)
                             ->required(),
 
                         ToggleButtons::make('status')
@@ -138,8 +153,9 @@ class OrderResource extends Resource
                     ->defaultImageUrl(function ($record) {
                         // Generate random name for the avatar
                         $name = $record->order_name ?: 'Unknown';
+
                         // Construct the URL with the random name
-                        return 'https://ui-avatars.com/api/?background=d97706&color=fff&name=' . urlencode($name);
+                        return 'https://ui-avatars.com/api/?background=d97706&color=fff&name='.urlencode($name);
                     }),
                 Tables\Columns\TextColumn::make('status')
                     ->sortable()
@@ -188,7 +204,7 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
-                ])
+                ]),
             ])
             ->defaultSort('delivery_date', 'asc')
             ->bulkActions([

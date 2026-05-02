@@ -2,10 +2,10 @@
 
 namespace App\Providers\Filament;
 
-
+use App\Filament\Pages\Auth\Register;
 use App\Filament\Widgets\ChartOverview;
-use App\Filament\Widgets\OrderStatusChart;
 use App\Filament\Widgets\CustomerGrowthChart;
+use App\Filament\Widgets\OrderStatusChart;
 use App\Filament\Widgets\StatsOverview;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -16,21 +16,17 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentView;
-use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
-
 class AppPanelProvider extends PanelProvider
 {
-
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -38,6 +34,8 @@ class AppPanelProvider extends PanelProvider
             ->id('app')
             ->path('/')
             ->login()
+            ->registration(Register::class)
+            ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
                 'gray' => Color::Zinc,
@@ -58,7 +56,7 @@ class AppPanelProvider extends PanelProvider
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(), // Register the plugin
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                FilamentShieldPlugin::make(),
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
@@ -77,7 +75,6 @@ class AppPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
-
 
     //refreshing laravel on every changes
     public function register(): void

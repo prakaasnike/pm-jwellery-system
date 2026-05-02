@@ -10,12 +10,21 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 class ChartOverview extends ApexChartWidget
 {
     protected static ?string $chartId = 'chartOverview';
+
     protected static string $view = 'widgets.chart-overview';
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
+
     protected static ?int $contentHeight = 300;
 
     public string $period = '1Y';
+
     public int $year = 0;
+
+    public static function canView(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') ?? false;
+    }
 
     public function mount(): void
     {
@@ -26,10 +35,10 @@ class ChartOverview extends ApexChartWidget
     protected function getHeading(): ?string
     {
         return match ($this->period) {
-            '1D'  => "Today's Orders — " . now()->format('d M Y'),
-            '7D'  => 'Orders — Last 7 Days',
+            '1D' => "Today's Orders — ".now()->format('d M Y'),
+            '7D' => 'Orders — Last 7 Days',
             '30D' => 'Orders — Last 30 Days',
-            '1Y'  => 'Orders — ' . ($this->year ?: now()->year),
+            '1Y' => 'Orders — '.($this->year ?: now()->year),
         };
     }
 
@@ -47,16 +56,16 @@ class ChartOverview extends ApexChartWidget
     protected function getOptions(): array
     {
         [$categories, $received, $delivered, $columnWidth] = match ($this->period) {
-            '1D'  => $this->buildHourly(),
-            '7D'  => $this->buildDaily(7),
+            '1D' => $this->buildHourly(),
+            '7D' => $this->buildDaily(7),
             '30D' => $this->buildDaily(30),
-            '1Y'  => $this->buildMonthly(),
+            '1Y' => $this->buildMonthly(),
         };
 
         return [
             'chart' => [
-                'type'    => 'bar',
-                'height'  => 270,
+                'type' => 'bar',
+                'height' => 270,
                 'toolbar' => ['show' => false],
                 'animations' => ['enabled' => true, 'speed' => 400],
             ],
@@ -69,35 +78,35 @@ class ChartOverview extends ApexChartWidget
             'xaxis' => [
                 'categories' => $categories,
                 'labels' => [
-                    'style'  => ['colors' => '#9ca3af', 'fontWeight' => 600],
+                    'style' => ['colors' => '#9ca3af', 'fontWeight' => 600],
                     'rotate' => $this->period === '30D' ? -45 : 0,
                 ],
                 'axisBorder' => ['show' => false],
-                'axisTicks'  => ['show' => false],
+                'axisTicks' => ['show' => false],
             ],
             'yaxis' => [
-                'min'            => 0,
+                'min' => 0,
                 'forceNiceScale' => true,
-                'labels'         => ['style' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
+                'labels' => ['style' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
             ],
-            'grid'   => ['borderColor' => '#374151', 'strokeDashArray' => 4],
+            'grid' => ['borderColor' => '#374151', 'strokeDashArray' => 4],
             'legend' => ['labels' => ['colors' => '#9ca3af', 'fontWeight' => 600]],
             'colors' => ['#c2732d', '#f0a059'],
-            'fill'   => [
-                'type'     => ['gradient', 'solid'],
+            'fill' => [
+                'type' => ['gradient', 'solid'],
                 'gradient' => [
-                    'shade'            => 'dark',
-                    'type'             => 'vertical',
-                    'shadeIntensity'   => 0.5,
+                    'shade' => 'dark',
+                    'type' => 'vertical',
+                    'shadeIntensity' => 0.5,
                     'gradientToColors' => ['#d97706'],
-                    'inverseColors'    => true,
-                    'opacityFrom'      => 1,
-                    'opacityTo'        => 0.7,
-                    'stops'            => [0, 100],
+                    'inverseColors' => true,
+                    'opacityFrom' => 1,
+                    'opacityTo' => 0.7,
+                    'stops' => [0, 100],
                 ],
             ],
             'plotOptions' => ['bar' => ['borderRadius' => 4, 'columnWidth' => $columnWidth]],
-            'tooltip'     => ['theme' => 'dark'],
+            'tooltip' => ['theme' => 'dark'],
         ];
     }
 
@@ -119,8 +128,8 @@ class ChartOverview extends ApexChartWidget
         $categories = $received = $delivered = [];
         for ($h = 0; $h < 24; $h++) {
             $categories[] = sprintf('%02d:00', $h);
-            $received[]   = (int) ($receivedByHour[$h] ?? 0);
-            $delivered[]  = (int) ($deliveredByHour[$h] ?? 0);
+            $received[] = (int) ($receivedByHour[$h] ?? 0);
+            $delivered[] = (int) ($deliveredByHour[$h] ?? 0);
         }
 
         return [$categories, $received, $delivered, '50%'];
@@ -145,10 +154,10 @@ class ChartOverview extends ApexChartWidget
 
         $categories = $received = $delivered = [];
         foreach (CarbonPeriod::create($start, now()) as $date) {
-            $key          = $date->toDateString();
+            $key = $date->toDateString();
             $categories[] = $days <= 7 ? $date->format('D d') : $date->format('d M');
-            $received[]   = (int) ($receivedByDate[$key] ?? 0);
-            $delivered[]  = (int) ($deliveredByDate[$key] ?? 0);
+            $received[] = (int) ($receivedByDate[$key] ?? 0);
+            $delivered[] = (int) ($deliveredByDate[$key] ?? 0);
         }
 
         return [$categories, $received, $delivered, $days <= 7 ? '40%' : '70%'];
@@ -174,8 +183,8 @@ class ChartOverview extends ApexChartWidget
         $categories = $received = $delivered = [];
         for ($m = 1; $m <= 12; $m++) {
             $categories[] = Carbon::create()->month($m)->format('M');
-            $received[]   = (int) ($receivedByMonth[$m] ?? 0);
-            $delivered[]  = (int) ($deliveredByMonth[$m] ?? 0);
+            $received[] = (int) ($receivedByMonth[$m] ?? 0);
+            $delivered[] = (int) ($deliveredByMonth[$m] ?? 0);
         }
 
         return [$categories, $received, $delivered, '60%'];

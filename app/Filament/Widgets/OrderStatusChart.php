@@ -22,6 +22,11 @@ class OrderStatusChart extends ApexChartWidget
 
     public int $year = 0;
 
+    public static function canView(): bool
+    {
+        return auth()->user()?->hasRole('super_admin') ?? false;
+    }
+
     private const STATUSES = [
         'received' => 'Received',
         'urgent' => 'Urgent',
