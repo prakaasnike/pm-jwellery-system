@@ -5,10 +5,12 @@ namespace App\Console\Commands;
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\TelegramNotifier;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Facades\Cache;
 
 class NotifyOrderDeliveries extends Command
 {
@@ -16,7 +18,7 @@ class NotifyOrderDeliveries extends Command
 
     protected $description = 'Send delivery date notifications for orders due today and tomorrow';
 
-    public function handle(): void
+    public function handle(TelegramNotifier $telegram): void
     {
         $admins = User::role('super_admin')->get();
 
@@ -60,6 +62,10 @@ class NotifyOrderDeliveries extends Command
 
         $this->info("Orders: {$dueToday->count()} due today, {$dueTomorrow->count()} due tomorrow.");
         $this->info("Notifications sent: {$adminNotifications} admin, {$customerNotifications} customer.");
+
+        if ($this->sendTelegramSummary($telegram, $dueToday, $dueTomorrow)) {
+            $this->info('Telegram summary sent.');
+        }
     }
 
     private function sendCustomerReminders(EloquentCollection $orders, string $reminder): int
@@ -145,5 +151,59 @@ class NotifyOrderDeliveries extends Command
             ->where('data->viewData->reminder', $reminder)
             ->where('data->viewData->reminder_date', today()->toDateString())
             ->exists();
+    }
+
+    private function sendTelegramSummary(
+        TelegramNotifier $telegram,
+        EloquentCollection $dueToday,
+        EloquentCollection $dueTomorrow,
+    ): bool {
+        if (! $telegram->enabled()) {
+            return false;
+        }
+
+        if ($dueToday->isEmpty() && $dueTomorrow->isEmpty()) {
+            return false;
+        }
+
+        $cacheKey = 'telegram_delivery_summary_sent_'.today()->toDateString();
+
+        if (! Cache::add($cacheKey, true, now()->addDay())) {
+            return false;
+        }
+
+        return $telegram->sendToAdmin($this->buildTelegramSummary($dueToday, $dueTomorrow));
+    }
+
+    private function buildTelegramSummary(EloquentCollection $dueToday, EloquentCollection $dueTomorrow): string
+    {
+        $lines = [
+            'PMJ delivery reminders',
+            'Date: '.today()->format('d M Y'),
+            '',
+            "Due today: {$dueToday->count()}",
+            ...$this->formatTelegramOrders($dueToday),
+            '',
+            "Due tomorrow: {$dueTomorrow->count()}",
+            ...$this->formatTelegramOrders($dueTomorrow),
+        ];
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    private function formatTelegramOrders(EloquentCollection $orders): array
+    {
+        if ($orders->isEmpty()) {
+            return ['- None'];
+        }
+
+        return $orders
+            ->map(fn (Order $order): string => sprintf(
+                '- %s | %s | %s',
+                $order->order_name,
+                $order->customer?->full_name ?? 'No customer',
+                ucfirst($order->status),
+            ))
+            ->all();
     }
 }
