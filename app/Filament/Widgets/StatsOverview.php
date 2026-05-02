@@ -13,24 +13,40 @@ class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
+        $customersByMonth = Customer::query()
+            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->whereYear('created_at', now()->year)
+            ->groupByRaw('MONTH(created_at)')
+            ->orderByRaw('MONTH(created_at)')
+            ->pluck('total', 'month');
+
+        $ordersByMonth = Order::query()
+            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total')
+            ->whereYear('received_date', now()->year)
+            ->groupByRaw('MONTH(received_date)')
+            ->orderByRaw('MONTH(received_date)')
+            ->pluck('total', 'month');
+
+        $customerChart = array_map(fn ($m) => $customersByMonth->get($m, 0), range(1, 12));
+        $orderChart    = array_map(fn ($m) => $ordersByMonth->get($m, 0), range(1, 12));
+
         return [
-            Stat::make('Customer', Customer::count())
-                ->description('Total Customers Joined')
+            Stat::make('Customers', Customer::count())
+                ->description('Total customers joined')
                 ->descriptionIcon('heroicon-m-user-group', IconPosition::Before)
-                ->chart([4, 20, 5, 60, 30, 90, 30])
+                ->chart($customerChart)
                 ->color('success'),
 
-            Stat::make('Order', Order::count())
-                ->description('Orders that have been created recently')
+            Stat::make('Orders', Order::count())
+                ->description('Total orders received')
                 ->descriptionIcon('heroicon-m-shopping-bag', IconPosition::Before)
-                ->chart([4, 20, 5, 60, 30, 90, 30])
+                ->chart($orderChart)
                 ->color('warning'),
 
-            Stat::make('Product', Product::count())
-                ->description('Total Products in Stock')
+            Stat::make('Products', Product::count())
+                ->description('Total products in stock')
                 ->descriptionIcon('heroicon-m-rectangle-stack', IconPosition::Before)
-                ->chart([4, 20, 5, 60, 30, 90, 30])
-                ->color('info')
+                ->color('info'),
         ];
     }
 }

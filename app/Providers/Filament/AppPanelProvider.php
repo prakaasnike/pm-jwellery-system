@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 
 use App\Filament\Widgets\ChartOverview;
+use App\Filament\Widgets\OrderStatusChart;
+use App\Filament\Widgets\PaymentStatusChart;
 use App\Filament\Widgets\StatsOverview;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -49,11 +51,10 @@ class AppPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                //   Widgets\AccountWidget::class,
-                //   Widgets\FilamentInfoWidget::class,
                 StatsOverview::class,
                 ChartOverview::class,
-
+                OrderStatusChart::class,
+                PaymentStatusChart::class,
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(), // Register the plugin

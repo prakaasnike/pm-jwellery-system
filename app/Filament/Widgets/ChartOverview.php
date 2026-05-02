@@ -13,84 +13,53 @@ class ChartOverview extends ApexChartWidget
      * @var string
      */
     protected static ?string $chartId = 'chartOverview';
+    protected static ?string $heading = 'Monthly Orders Overview';
+    protected int | string | array $columnSpan = 'full';
+    protected static ?int $contentHeight = 300;
 
-    /**
-     * Widget Title
-     *
-     * @var string|null
-     */
-    protected static ?string $heading = 'Orders Overview';
-
-    /**
-     * Chart options (series, labels, types, size, animations...)
-     * https://apexcharts.com/docs/options
-     *
-     * @return array
-     */
     protected function getFilter(): ?string
     {
-        return now()->year;
+        return (string) now()->year;
     }
-
-    /**
-     * Filter Options
-     *
-     * @return array|null
-     */
 
     protected function getFilters(): ?array
     {
         $years = range(now()->year, 2024);
 
-        return $years;
+        return array_combine($years, $years);
     }
 
-    /**
-     * Chart options (series, labels, types, size, animations...)
-     * https://apexcharts.com/docs/options
-     *
-     * @return array
-     */
     protected function getOptions(): array
     {
-        $currentYear = $this->filter ?? now()->year;
+        $currentYear = (int) ($this->filter ?? now()->year);
 
-        // Fetch the total orders for each month based on received_date
-        $ordersByReceivedMonth = Order::query()
-            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total_orders_received')
+        $receivedByMonth = Order::query()
+            ->selectRaw('MONTH(received_date) as month, COUNT(*) as total')
             ->whereYear('received_date', $currentYear)
             ->groupByRaw('MONTH(received_date)')
-            ->orderByRaw('MONTH(received_date)')
             ->get()
             ->keyBy('month');
 
-        // Fetch the total orders for each month based on updated_at
-        $ordersByUpdatedMonth = Order::query()
-            ->selectRaw('MONTH(updated_at) as month, COUNT(*) as total_orders_updated')
+        $deliveredByMonth = Order::query()
+            ->selectRaw('MONTH(updated_at) as month, COUNT(*) as total')
             ->whereYear('updated_at', $currentYear)
+            ->where('status', 'delivered')
             ->groupByRaw('MONTH(updated_at)')
-            ->orderByRaw('MONTH(updated_at)')
             ->get()
             ->keyBy('month');
 
-        // Initialize arrays for all months
-        $allMonths = [];
-        $totalOrders = [];
+        $months = [];
+        $received = [];
+        $delivered = [];
 
-        // Calculate the combined total orders for each month
         for ($month = 1; $month <= 12; $month++) {
-            $allMonths[] = \DateTime::createFromFormat('!m', $month)->format('M');
-
-            // Get received and updated orders count for the month
-            $receivedOrders = $ordersByReceivedMonth->get($month)->total_orders_received ?? 0;
-            $updatedOrders = $ordersByUpdatedMonth->get($month)->total_orders_updated ?? 0;
-
-            // Subtract updated orders from received orders to avoid double counting
-            $totalOrders[] = $receivedOrders - ($ordersByUpdatedMonth->get($month)->total_orders_updated ?? 0) + $updatedOrders;
+            $months[]    = \DateTime::createFromFormat('!m', $month)->format('M');
+            $received[]  = $receivedByMonth->get($month)->total ?? 0;
+            $delivered[] = $deliveredByMonth->get($month)->total ?? 0;
         }
         return [
             'chart' => [
-                'type' => 'line',
+                'type' => 'bar',
                 'height' => 250,
                 'toolbar' => [
                     'show' => false,
@@ -98,22 +67,25 @@ class ChartOverview extends ApexChartWidget
             ],
             'series' => [
                 [
-                    'name' => 'Orders',
-                    'data' => $totalOrders,
+                    'name' => 'Received',
+                    'data' => $received,
                     'type' => 'column',
                 ],
                 [
-                    'name' => 'Line',
-                    'data' => $totalOrders,
+                    'name' => 'Delivered',
+                    'data' => $delivered,
                     'type' => 'line',
                 ],
             ],
             'stroke' => [
-                'width' => [0, 4],
+                'width' => [0, 3],
                 'curve' => 'smooth',
             ],
+            'dataLabels' => [
+                'enabled' => false,
+            ],
             'xaxis' => [
-                'categories' => $allMonths,
+                'categories' => $months,
                 'labels' => [
                     'style' => [
                         'colors' => '#9ca3af',
@@ -122,6 +94,8 @@ class ChartOverview extends ApexChartWidget
                 ],
             ],
             'yaxis' => [
+                'min' => 0,
+                'forceNiceScale' => true,
                 'labels' => [
                     'style' => [
                         'colors' => '#9ca3af',
@@ -137,7 +111,7 @@ class ChartOverview extends ApexChartWidget
             ],
             'colors' => ['#c2732d', '#f0a059'],
             'fill' => [
-                'type' => 'gradient',
+                'type' => ['gradient', 'solid'],
                 'gradient' => [
                     'shade' => 'dark',
                     'type' => 'vertical',
@@ -145,13 +119,14 @@ class ChartOverview extends ApexChartWidget
                     'gradientToColors' => ['#d97706'],
                     'inverseColors' => true,
                     'opacityFrom' => 1,
-                    'opacityTo' => 1,
+                    'opacityTo' => 0.8,
                     'stops' => [0, 100],
                 ],
             ],
             'plotOptions' => [
                 'bar' => [
-                    'borderRadius' => 10,
+                    'borderRadius' => 6,
+                    'columnWidth' => '60%',
                 ],
             ],
         ];
