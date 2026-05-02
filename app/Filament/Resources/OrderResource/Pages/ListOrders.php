@@ -4,13 +4,9 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Components\Tab;
-use Filament\Tables\Table;
-use Filament\Tables\HasTableColumns;
-use App\Models\OrderStatus;
-use Filament\Forms\Components\Tabs;
-// use Filament\Tables\Tab; // Import Tab class
+use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
@@ -26,25 +22,27 @@ class ListOrders extends ListRecords
     public function getTabs(): array
     {
         return [
-            'All' => Tab::make('All'),
-            'received' => Tab::make('Received')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->where('status', 'received');
-                }),
-            'urgent' => Tab::make('Urgent')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->where('status', 'urgent');
-                }),
-            'ongoing' => Tab::make('Ongoing')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->where('status', 'ongoing');
-                }),
-            'delivered' => Tab::make('Delivered')
-                ->modifyQueryUsing(function ($query) {
-                    return $query->where('status', 'delivered');
-                }),
+            'all' => Tab::make('All')
+                ->badge($this->getStatusCount()),
+            'received' => $this->statusTab('received'),
+            'urgent' => $this->statusTab('urgent'),
+            'ongoing' => $this->statusTab('ongoing'),
+            'delivered' => $this->statusTab('delivered'),
+        ];
+    }
 
+    private function statusTab(string $status): Tab
+    {
+        return Tab::make(OrderResource::getStatusOptions()[$status])
+            ->badge($this->getStatusCount($status))
+            ->badgeColor(OrderResource::getStatusColor($status))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', $status));
+    }
 
-        ]; // Add a semicolon here
+    private function getStatusCount(?string $status = null): int
+    {
+        return OrderResource::getEloquentQuery()
+            ->when($status, fn (Builder $query): Builder => $query->where('status', $status))
+            ->count();
     }
 }

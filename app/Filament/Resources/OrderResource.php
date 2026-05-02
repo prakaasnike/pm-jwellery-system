@@ -16,6 +16,8 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -27,6 +29,49 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+    public static function getStatusOptions(): array
+    {
+        return [
+            'received' => 'Received',
+            'urgent' => 'Urgent',
+            'ongoing' => 'Ongoing',
+            'delivered' => 'Delivered',
+        ];
+    }
+
+    public static function getPaymentStatusOptions(): array
+    {
+        return [
+            'paid' => 'Paid',
+            'unpaid' => 'Unpaid',
+            'initialpaid' => 'Initial paid',
+        ];
+    }
+
+    public static function getStatusColors(): array
+    {
+        return [
+            'received' => 'gray',
+            'urgent' => 'danger',
+            'ongoing' => 'warning',
+            'delivered' => 'success',
+        ];
+    }
+
+    public static function getPaymentStatusColors(): array
+    {
+        return [
+            'paid' => 'success',
+            'unpaid' => 'warning',
+            'initialpaid' => 'gray',
+        ];
+    }
+
+    public static function getStatusColor(string $state): string
+    {
+        return self::getStatusColors()[$state] ?? 'gray';
+    }
 
     public static function getEloquentQuery(): Builder
     {
@@ -54,72 +99,80 @@ class OrderResource extends Resource
 
         return $form
             ->schema([
-                Section::make('Create an order for your customers')
-                    ->description('')
+                Group::make()
                     ->schema([
-                        TextInput::make('order_name')
-                            ->label('Order')
-                            ->required()
-                            ->maxLength(255),
-                        Select::make('customer_id')
-                            ->relationship('customer', 'full_name')
-                            ->options($customers)
-                            ->searchable()
-                            ->disabled(fn () => auth()->user()?->hasRole('super_admin') === false)
-                            ->required(),
-
-                        ToggleButtons::make('status')
-                            ->inline()
-                            ->required()
-                            ->options([
-                                'received' => 'received',
-                                'urgent' => 'urgent',
-                                'ongoing' => 'ongoing',
-                                'delivered' => 'delivered',
+                        Section::make('Order details')
+                            ->schema([
+                                Select::make('customer_id')
+                                    ->label('Customer')
+                                    ->relationship('customer', 'full_name')
+                                    ->options($customers)
+                                    ->searchable()
+                                    ->preload()
+                                    ->disabled(fn () => auth()->user()?->hasRole('super_admin') === false)
+                                    ->required(),
+                                TextInput::make('order_name')
+                                    ->label('Order')
+                                    ->required()
+                                    ->maxLength(255),
+                                Select::make('product_id')
+                                    ->label('Products')
+                                    ->relationship('products', 'name')
+                                    ->options($products)
+                                    ->searchable()
+                                    ->multiple()
+                                    ->preload()
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(2)
+                            ->compact(),
+                        Section::make('Images')
+                            ->compact()
+                            ->collapsible()
+                            ->schema([
+                                FileUpload::make('order_image')
+                                    ->label('Images')
+                                    ->image()
+                                    ->maxFiles(4)
+                                    ->multiple()
+                                    ->preserveFilenames()
+                                    ->imagePreviewHeight('80')
+                                    ->maxSize(512 * 512 * 2),
                             ]),
-                        ToggleButtons::make('payment_status')
-                            ->label('Payment Status')
-                            ->inline()
-                            ->required()
-                            ->options([
-                                'paid' => 'paid',
-                                'unpaid' => 'unpaid',
-                                'initialpaid' => 'initialpaid',
-                            ]),
-                        DatePicker::make('received_date')
-                            ->required()
-                            ->displayFormat('d/m/Y')
-                            ->closeOnDateSelection()
-                            ->weekStartsOnSunday()
-                            ->native(false),
-                        DatePicker::make('delivery_date')
-                            ->required()
-                            ->displayFormat('d/m/Y')
-                            ->closeOnDateSelection()
-                            ->weekStartsOnSunday()
-                            ->native(false),
-                        Select::make('product_id')
-                            ->relationship('products', 'name')
-                            ->options($products)
-                            ->searchable()
-                            ->multiple()
-                            ->columnSpanFull(),
                     ])
-                    ->columnSpan(2)
-                    ->columns(2),
-                Group::make()->schema([
-                    Section::make('Image')
-                        ->schema([
-                            FileUpload::make('order_image')
-                                ->image()
-                                ->maxFiles(4)
-                                ->multiple()
-                                ->preserveFilenames()
-                                ->imagePreviewHeight('40')
-                                ->maxSize(512 * 512 * 2),
-                        ]), // Section title should not be standalone
-                ])
-                    ->columnSpan(1),
+                    ->columnSpan(['lg' => 2]),
+                Group::make()
+                    ->schema([
+                        Section::make('Status')
+                            ->schema([
+                                ToggleButtons::make('status')
+                                    ->grouped()
+                                    ->required()
+                                    ->options(self::getStatusOptions())
+                                    ->colors(self::getStatusColors()),
+                                ToggleButtons::make('payment_status')
+                                    ->label('Payment')
+                                    ->grouped()
+                                    ->required()
+                                    ->options(self::getPaymentStatusOptions())
+                                    ->colors(self::getPaymentStatusColors()),
+                                DatePicker::make('received_date')
+                                    ->label('Order date')
+                                    ->required()
+                                    ->displayFormat('d/m/Y')
+                                    ->closeOnDateSelection()
+                                    ->weekStartsOnSunday()
+                                    ->native(false),
+                                DatePicker::make('delivery_date')
+                                    ->required()
+                                    ->displayFormat('d/m/Y')
+                                    ->closeOnDateSelection()
+                                    ->weekStartsOnSunday()
+                                    ->native(false),
+                            ])
+                            ->compact(),
+                    ])
+                    ->columnSpan(['lg' => 1]),
             ])
 
             ->columns([
@@ -135,6 +188,7 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('customer.full_name')
+                    ->label('Customer')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('customer.phone')
@@ -143,18 +197,15 @@ class OrderResource extends Resource
                     ->color('cyan'),
                 Tables\Columns\TextColumn::make('order_name')
                     ->label('Order')
-                    ->searchable(),
+                    ->searchable()
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('status')
                     ->sortable()
                     ->badge()
                     ->alignCenter()
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->color(fn (string $state): string => match ($state) {
-                        'delivered' => 'success',
-                        'ongoing' => 'warning',
-                        'urgent' => 'danger',
-                        'received' => 'gray',
-                    })
+                    ->color(fn (string $state): string => self::getStatusColor($state))
+                    ->tooltip(fn (Order $record): ?string => auth()->user()?->can('update', $record) ? 'Click to change status' : null)
                     ->action(
                         Tables\Actions\Action::make('changeStatus')
                             ->label('Change Status')
@@ -167,12 +218,7 @@ class OrderResource extends Resource
                                 Select::make('status')
                                     ->label('Status')
                                     ->required()
-                                    ->options([
-                                        'received' => 'Received',
-                                        'urgent' => 'Urgent',
-                                        'ongoing' => 'Ongoing',
-                                        'delivered' => 'Delivered',
-                                    ])
+                                    ->options(self::getStatusOptions())
                                     ->native(false),
                             ])
                             ->action(fn (Order $record, array $data): bool => $record->update([
@@ -204,15 +250,12 @@ class OrderResource extends Resource
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('payment_status')
+                    ->label('Payment')
                     ->numeric()
                     ->sortable()
                     ->alignCenter()
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'paid' => 'success',
-                        'unpaid' => 'warning',
-                        'initialpaid' => 'gray',
-                    })
+                    ->color(fn (string $state): string => self::getPaymentStatusColors()[$state] ?? 'gray')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -224,15 +267,67 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('customer_id')
+                    ->label('Customer')
+                    ->options(fn (): array => Customer::query()
+                        ->orderBy('full_name')
+                        ->pluck('full_name', 'id')
+                        ->all())
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('payment_status')
+                    ->label('Payment')
+                    ->options(self::getPaymentStatusOptions()),
+                Filter::make('due_today')
+                    ->label('Due today')
+                    ->query(fn (Builder $query): Builder => $query->whereDate('delivery_date', today())),
+                Filter::make('overdue')
+                    ->label('Overdue')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->whereDate('delivery_date', '<', today())
+                        ->where('status', '!=', 'delivered')),
+                Filter::make('received_date')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('Order from')
+                            ->native(false),
+                        DatePicker::make('until')
+                            ->label('Order until')
+                            ->native(false),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('received_date', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('received_date', '<=', $date))),
             ])
+            ->filtersTriggerAction(fn (Tables\Actions\Action $action): Tables\Actions\Action => $action->button()->label('Filters'))
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
 
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('status')
+                        ->label('Change status')
+                        ->icon('heroicon-o-arrow-path')
+                        ->modalHeading(fn (Order $record): string => "Change status: {$record->order_name}")
+                        ->fillForm(fn (Order $record): array => [
+                            'status' => $record->status,
+                        ])
+                        ->form([
+                            Select::make('status')
+                                ->label('Status')
+                                ->required()
+                                ->options(self::getStatusOptions())
+                                ->native(false),
+                        ])
+                        ->action(fn (Order $record, array $data): bool => $record->update([
+                            'status' => $data['status'],
+                        ]))
+                        ->visible(fn (Order $record): bool => auth()->user()?->can('update', $record) ?? false),
                     Tables\Actions\EditAction::make()
                         ->visible(fn (Order $record): bool => auth()->user()?->can('update', $record) ?? false),
                 ]),
             ])
+            ->recordUrl(null)
             ->defaultSort('delivery_date', 'asc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
