@@ -8,61 +8,142 @@ use App\Models\User;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class NotifyOrderDeliveries extends Command
 {
-    protected $signature   = 'orders:notify-deliveries';
+    protected $signature = 'orders:notify-deliveries';
+
     protected $description = 'Send delivery date notifications for orders due today and tomorrow';
 
     public function handle(): void
     {
         $admins = User::role('super_admin')->get();
 
-        if ($admins->isEmpty()) {
-            return;
-        }
-
-        $today    = now()->toDateString();
+        $today = now()->toDateString();
         $tomorrow = now()->addDay()->toDateString();
 
-        $dueToday = Order::whereDate('delivery_date', $today)
+        $dueToday = Order::query()
+            ->with('customer.user')
+            ->whereDate('delivery_date', $today)
             ->whereNotIn('status', ['delivered'])
             ->get();
 
-        $dueTomorrow = Order::whereDate('delivery_date', $tomorrow)
+        $dueTomorrow = Order::query()
+            ->with('customer.user')
+            ->whereDate('delivery_date', $tomorrow)
             ->whereNotIn('status', ['delivered'])
             ->get();
 
-        foreach ($dueToday as $order) {
-            Notification::make()
-                ->warning()
-                ->title('Delivery due today')
-                ->body("Order **{$order->order_name}** is due for delivery today.")
-                ->icon('heroicon-o-clock')
-                ->actions([
-                    Action::make('view')
-                        ->label('View Order')
-                        ->url(OrderResource::getUrl('edit', ['record' => $order]))
-                        ->markAsRead(),
-                ])
-                ->sendToDatabase($admins);
+        $adminNotifications = $this->sendReminders(
+            orders: $dueToday,
+            recipients: $admins,
+            reminder: 'today',
+            title: 'Delivery due today',
+            bodyPrefix: 'Order',
+            bodySuffix: 'is due for delivery today.',
+            icon: 'heroicon-o-clock',
+            status: 'warning',
+        ) + $this->sendReminders(
+            orders: $dueTomorrow,
+            recipients: $admins,
+            reminder: 'tomorrow',
+            title: 'Delivery due tomorrow',
+            bodyPrefix: 'Order',
+            bodySuffix: 'is due for delivery tomorrow.',
+            icon: 'heroicon-o-calendar-days',
+            status: 'info',
+        );
+
+        $customerNotifications = $this->sendCustomerReminders($dueToday, 'today')
+            + $this->sendCustomerReminders($dueTomorrow, 'tomorrow');
+
+        $this->info("Orders: {$dueToday->count()} due today, {$dueTomorrow->count()} due tomorrow.");
+        $this->info("Notifications sent: {$adminNotifications} admin, {$customerNotifications} customer.");
+    }
+
+    private function sendCustomerReminders(EloquentCollection $orders, string $reminder): int
+    {
+        $sent = 0;
+
+        foreach ($orders as $order) {
+            $customerUser = $order->customer?->user;
+
+            if (! $customerUser) {
+                continue;
+            }
+
+            $title = $reminder === 'today' ? 'Your delivery is due today' : 'Your delivery is due tomorrow';
+            $bodySuffix = $reminder === 'today'
+                ? 'is due for delivery today.'
+                : 'is due for delivery tomorrow.';
+
+            $sent += $this->sendReminders(
+                orders: new EloquentCollection([$order]),
+                recipients: new EloquentCollection([$customerUser]),
+                reminder: "customer-{$reminder}",
+                title: $title,
+                bodyPrefix: 'Your order',
+                bodySuffix: $bodySuffix,
+                icon: $reminder === 'today' ? 'heroicon-o-clock' : 'heroicon-o-calendar-days',
+                status: $reminder === 'today' ? 'warning' : 'info',
+                url: OrderResource::getUrl('index'),
+            );
         }
 
-        foreach ($dueTomorrow as $order) {
-            Notification::make()
-                ->info()
-                ->title('Delivery due tomorrow')
-                ->body("Order **{$order->order_name}** is due for delivery tomorrow.")
-                ->icon('heroicon-o-calendar-days')
-                ->actions([
-                    Action::make('view')
-                        ->label('View Order')
-                        ->url(OrderResource::getUrl('edit', ['record' => $order]))
-                        ->markAsRead(),
-                ])
-                ->sendToDatabase($admins);
+        return $sent;
+    }
+
+    private function sendReminders(
+        EloquentCollection $orders,
+        EloquentCollection $recipients,
+        string $reminder,
+        string $title,
+        string $bodyPrefix,
+        string $bodySuffix,
+        string $icon,
+        string $status,
+        ?string $url = null,
+    ): int {
+        $sent = 0;
+
+        foreach ($orders as $order) {
+            foreach ($recipients as $recipient) {
+                if ($this->reminderAlreadySent($recipient, $order, $reminder)) {
+                    continue;
+                }
+
+                Notification::make()
+                    ->{$status}()
+                    ->title($title)
+                    ->body("{$bodyPrefix} **{$order->order_name}** {$bodySuffix}")
+                    ->icon($icon)
+                    ->viewData([
+                        'order_id' => $order->id,
+                        'reminder' => $reminder,
+                        'reminder_date' => today()->toDateString(),
+                    ])
+                    ->actions([
+                        Action::make('view')
+                            ->label('View Order')
+                            ->url($url ?? OrderResource::getUrl('edit', ['record' => $order]))
+                            ->markAsRead(),
+                    ])
+                    ->sendToDatabase($recipient);
+
+                $sent++;
+            }
         }
 
-        $this->info("Notified: {$dueToday->count()} due today, {$dueTomorrow->count()} due tomorrow.");
+        return $sent;
+    }
+
+    private function reminderAlreadySent(User $user, Order $order, string $reminder): bool
+    {
+        return $user->notifications()
+            ->where('data->viewData->order_id', $order->id)
+            ->where('data->viewData->reminder', $reminder)
+            ->where('data->viewData->reminder_date', today()->toDateString())
+            ->exists();
     }
 }
