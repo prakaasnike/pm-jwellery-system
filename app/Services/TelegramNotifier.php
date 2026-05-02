@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class TelegramNotifier
 {
@@ -20,16 +21,24 @@ class TelegramNotifier
             return false;
         }
 
-        $response = Http::asJson()
-            ->timeout(10)
-            ->withOptions([
-                'verify' => (bool) config('services.telegram.verify_ssl'),
-            ])
-            ->post($this->endpoint('sendMessage'), [
-                'chat_id' => $this->adminChatId(),
-                'text' => $message,
-                'disable_web_page_preview' => true,
+        try {
+            $response = Http::asJson()
+                ->timeout(10)
+                ->withOptions([
+                    'verify' => (bool) config('services.telegram.verify_ssl'),
+                ])
+                ->post($this->endpoint('sendMessage'), [
+                    'chat_id' => $this->adminChatId(),
+                    'text' => $message,
+                    'disable_web_page_preview' => true,
+                ]);
+        } catch (Throwable $exception) {
+            Log::warning('Telegram notification failed.', [
+                'error' => $exception->getMessage(),
             ]);
+
+            return false;
+        }
 
         if ($response->failed()) {
             Log::warning('Telegram notification failed.', [
