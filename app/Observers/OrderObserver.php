@@ -71,8 +71,10 @@ class OrderObserver
         if ($customerUser) {
             Notification::make()
                 ->info()
-                ->title("Order updated: {$order->order_name}")
-                ->body(implode(' | ', $changes))
+                ->title($order->wasChanged('status') ? 'Order status updated' : "Order updated: {$order->order_name}")
+                ->body($order->wasChanged('status')
+                    ? "Your order **{$order->order_name}** is now **".ucfirst($order->status).'**.'
+                    : implode(' | ', $changes))
                 ->icon('heroicon-o-arrow-path')
                 ->actions([
                     Action::make('view')
