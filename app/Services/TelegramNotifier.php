@@ -22,6 +22,9 @@ class TelegramNotifier
 
         $response = Http::asJson()
             ->timeout(10)
+            ->withOptions([
+                'verify' => (bool) config('services.telegram.verify_ssl'),
+            ])
             ->post($this->endpoint('sendMessage'), [
                 'chat_id' => config('services.telegram.admin_chat_id'),
                 'text' => $message,
