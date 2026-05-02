@@ -10,8 +10,8 @@ class TelegramNotifier
     public function enabled(): bool
     {
         return (bool) config('services.telegram.enabled')
-            && filled(config('services.telegram.bot_token'))
-            && filled(config('services.telegram.admin_chat_id'));
+            && filled($this->botToken())
+            && filled($this->adminChatId());
     }
 
     public function sendToAdmin(string $message): bool
@@ -26,7 +26,7 @@ class TelegramNotifier
                 'verify' => (bool) config('services.telegram.verify_ssl'),
             ])
             ->post($this->endpoint('sendMessage'), [
-                'chat_id' => config('services.telegram.admin_chat_id'),
+                'chat_id' => $this->adminChatId(),
                 'text' => $message,
                 'disable_web_page_preview' => true,
             ]);
@@ -35,6 +35,9 @@ class TelegramNotifier
             Log::warning('Telegram notification failed.', [
                 'status' => $response->status(),
                 'body' => $response->body(),
+                'hint' => $response->status() === 404
+                    ? 'Check TELEGRAM_BOT_TOKEN on live. It should be the BotFather token only; both "123:ABC" and "bot123:ABC" are accepted.'
+                    : null,
             ]);
 
             return false;
@@ -47,8 +50,28 @@ class TelegramNotifier
     {
         return sprintf(
             'https://api.telegram.org/bot%s/%s',
-            config('services.telegram.bot_token'),
+            $this->botToken(),
             $method,
         );
+    }
+
+    private function botToken(): ?string
+    {
+        $token = trim((string) config('services.telegram.bot_token'));
+
+        if ($token === '') {
+            return null;
+        }
+
+        return str_starts_with(strtolower($token), 'bot')
+            ? substr($token, 3)
+            : $token;
+    }
+
+    private function adminChatId(): ?string
+    {
+        $chatId = trim((string) config('services.telegram.admin_chat_id'));
+
+        return $chatId === '' ? null : $chatId;
     }
 }
