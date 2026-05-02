@@ -20,18 +20,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // Create a single FilamentUser
-        $user1 = User::factory()->create([
-            'name' => 'admin',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin'),
-        ]);
+        $user1 = User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            ['name' => 'admin', 'password' => Hash::make('admin')]
+        );
+        $user1->assignRole('super_admin');
 
-        $user2 = User::factory()->create([
-            'name' => 'test',
-            'email' => 'test@gmail.com',
-            'password' => Hash::make('test'),
-        ]);
+        $user2 = User::firstOrCreate(
+            ['email' => 'test@gmail.com'],
+            ['name' => 'test', 'password' => Hash::make('test')]
+        );
+        $user2->assignRole('panel_user');
 
         // Customer::factory()->count(0)->create();
         // Type::factory()->count(0)->create();

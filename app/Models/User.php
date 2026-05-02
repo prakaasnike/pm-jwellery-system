@@ -7,12 +7,11 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable //implements FilamentUser
+class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasPanelShield;
 
     /**
      * The attributes that are mass assignable.
@@ -48,23 +47,4 @@ class User extends Authenticatable //implements FilamentUser
         ];
     }
 
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     // Assuming 'super_admin' can access any panel
-    //     if ($this->hasRole('super_admin')) {
-    //         return true;
-    //     }
-
-    //     // Define other role-based access logic
-    //     if ($panel->getId() === 'admin') {
-    //         return $this->hasRole('admin');
-    //     }
-
-    //     if ($panel->getId() === 'moderator') {
-    //         return $this->hasRole('moderator');
-    //     }
-
-    //     // Default deny access
-    //     return true;
-    // }
 }
