@@ -25,6 +25,9 @@ class UserObserver
      */
     public function updated(User $user): void
     {
+        if (! $user->wasChanged(['name', 'email', 'password'])) {
+            return;
+        }
 
         Notification::make()
             ->success()
