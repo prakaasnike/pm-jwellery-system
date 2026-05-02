@@ -38,85 +38,81 @@ class ProductResource extends Resource
 
         return $form
             ->schema([
-                Section::make('Enter your product details')
-                    ->description('')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Product Name')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('stone_name')
-                            ->label('Stone Name')
-                            ->required()
-                            ->maxLength(255),
-
-                        Forms\Components\Grid::make(3)
-                            ->schema([
-                                Forms\Components\TextInput::make('stone_weight')
-                                    ->label('Stone Weight')
-                                    ->required()
-                                    ->live()
-                                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
-                                    ->numeric()
-                                    ->suffix('gm')
-                                    ->afterStateUpdated($updateNetWeight),
-                                Forms\Components\TextInput::make('product_total_weight')
-                                    ->label('Total Weight')
-                                    ->required()
-                                    ->numeric()
-                                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
-                                    ->live()
-                                    ->suffix('gm')
-                                    ->afterStateUpdated($updateNetWeight),
-                                Forms\Components\TextInput::make('product_net_weight')
-                                    ->label('Net Weight')
-                                    ->disabled()
-                                    ->live(debounce: 500)
-                                    ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
-                                    ->dehydrated()
-                                    ->suffix('gm')
-                                    ->numeric(),
-                            ]),
-
-                        Forms\Components\Select::make('unit_id')
-                            ->native(false)
-                            ->relationship('unit', 'name'),
-                        Forms\Components\Select::make('category_id')
-                            ->native(false)
-                            ->relationship('category', 'name')
-                            ->options($categories)
-                            ->searchable(),
-                    ])->columnSpan(2)->columns(2),
-                // Group Column
                 Group::make()->schema([
-                    Section::make("Image")
-                        ->collapsible()
+                    Section::make('Product Details')
                         ->schema([
-                            Forms\Components\FileUpload::make('product_image')
-                                ->image()
-                                ->maxFiles(1)
-                                ->preserveFilenames()
-                                ->maxSize(512 * 512 * 2)
-                                ->imagePreviewHeight('90'),
-                        ]),
-                    Section::make("Type")
-                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->label('Product Name')
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('stone_name')
+                                ->label('Stone Name')
+                                ->maxLength(255)
+                                ->columnSpan(1),
+
+                            Forms\Components\TextInput::make('stone_weight')
+                                ->label('Stone Weight')
+                                ->required()
+                                ->live()
+                                ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
+                                ->numeric()
+                                ->suffix('gm')
+                                ->afterStateUpdated($updateNetWeight),
+                            Forms\Components\TextInput::make('product_total_weight')
+                                ->label('Total Weight')
+                                ->required()
+                                ->numeric()
+                                ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
+                                ->live()
+                                ->suffix('gm')
+                                ->afterStateUpdated($updateNetWeight),
+                            Forms\Components\TextInput::make('product_net_weight')
+                                ->label('Net Weight')
+                                ->disabled()
+                                ->dehydrated()
+                                ->rules(['regex:/^\d{1,6}(\.\d{0,2})?$/'])
+                                ->suffix('gm')
+                                ->numeric(),
+
+                            Forms\Components\Select::make('category_id')
+                                ->label('Category')
+                                ->native(false)
+                                ->relationship('category', 'name')
+                                ->options($categories)
+                                ->searchable()
+                                ->preload(),
+                            Forms\Components\Select::make('unit_id')
+                                ->label('Unit')
+                                ->native(false)
+                                ->relationship('unit', 'name')
+                                ->preload(),
                             Forms\Components\Select::make('type_id')
+                                ->label('Types')
                                 ->native(false)
                                 ->relationship('types', 'name')
                                 ->multiple()
                                 ->options($types)
-                                ->searchable(),
-                        ])
-                        ->columnSpan(1),
-                ]),
+                                ->searchable()
+                                ->preload(),
+                        ])->columns(3),
+                ])->columnSpan(2),
+
+                Group::make()->schema([
+                    Section::make('Image')
+                        ->schema([
+                            Forms\Components\FileUpload::make('product_image')
+                                ->label('Product Image')
+                                ->image()
+                                ->maxFiles(1)
+                                ->preserveFilenames()
+                                ->maxSize(512 * 512 * 2)
+                                ->imagePreviewHeight('120')
+                                ->hiddenLabel(),
+                        ]),
+                ])->columnSpan(1),
             ])
-            ->columns([
-                'default' => 3,
-                'sm' => 3,
-                'md' => 3,
-                'lg' => 3,
-            ]);
+            ->columns(3);
     }
 
     public static function table(Table $table): Table
