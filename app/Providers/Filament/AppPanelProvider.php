@@ -5,7 +5,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Widgets\ChartOverview;
 use App\Filament\Widgets\OrderStatusChart;
-use App\Filament\Widgets\PaymentStatusChart;
+use App\Filament\Widgets\CustomerGrowthChart;
 use App\Filament\Widgets\StatsOverview;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -54,7 +54,7 @@ class AppPanelProvider extends PanelProvider
                 StatsOverview::class,
                 ChartOverview::class,
                 OrderStatusChart::class,
-                PaymentStatusChart::class,
+                CustomerGrowthChart::class,
             ])
             ->plugins([
                 FilamentApexChartsPlugin::make(), // Register the plugin
